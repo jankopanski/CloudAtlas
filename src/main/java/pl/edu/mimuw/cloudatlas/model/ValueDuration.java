@@ -25,12 +25,15 @@
 package pl.edu.mimuw.cloudatlas.model;
 
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * A class representing duration in milliseconds. The duration can be negative. This is a simple wrapper of a Java
  * <code>Long</code> object.
  */
 public class ValueDuration extends ValueSimple<Long> {
-	/**
+    /**
 	 * Constructs a new <code>ValueDuration</code> object wrapping the specified <code>value</code>.
 	 * 
 	 * @param value the value to wrap
@@ -42,13 +45,13 @@ public class ValueDuration extends ValueSimple<Long> {
 	@Override
 	public Type getType() {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+		return TypePrimitive.DURATION;
 	}
 	
 	@Override
 	public Value getDefaultValue() {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+		return new ValueDuration(0L);
 	}
 	
 	/**
@@ -120,54 +123,114 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	private static long parseDuration(String value) {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+        String regex = "^([+-]\\d) (\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})$";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(value);
+        if (matcher.matches()) {
+            Long days = Long.valueOf(matcher.group(1));
+            Long hours = Long.valueOf(matcher.group(2));
+            Long minutes = Long.valueOf(matcher.group(3));
+            Long seconds = Long.valueOf(matcher.group(4));
+            Long milliseconds = Long.valueOf(matcher.group(5));
+            if (days >= 24 || minutes >= 60 || seconds >= 60 || milliseconds >= 1000)
+                throw new IllegalArgumentException("Duration string does not meet described rules.");
+            Long duration = ((((days) * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000 + milliseconds;
+            if (matcher.group(0).equals("-"))
+                return -duration;
+            return duration;
+        }
+        throw new IllegalArgumentException("Duration string does not meet described rules.");
 	}
 	
 	@Override
 	public ValueBoolean isLowerThan(Value value) {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+		sameTypesOrThrow(value, Operation.COMPARE);
+		if(isNull() || value.isNull())
+			return new ValueBoolean(null);
+		return new ValueBoolean(getValue() < ((ValueDuration)value).getValue());
 	}
 	
 	@Override
 	public ValueDuration addValue(Value value) {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+		sameTypesOrThrow(value, Operation.COMPARE);
+        if(isNull() || value.isNull())
+            return new ValueDuration((Long)null);
+        return new ValueDuration(getValue() + ((ValueDuration)value).getValue());
 	}
 	
 	@Override
 	public ValueDuration subtract(Value value) {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+        sameTypesOrThrow(value, Operation.SUBTRACT);
+        if(isNull() || value.isNull())
+            return new ValueDuration((Long)null);
+        return new ValueDuration(getValue() - ((ValueDuration)value).getValue());
 	}
 	
 	@Override
 	public ValueDuration multiply(Value value) {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+		if (value.getType().isCompatible(TypePrimitive.INTEGER)) {
+		    if (isNull() || value.isNull())
+		        return new ValueDuration((Long)null);
+		    return new ValueDuration(getValue() * ((ValueInt)value).getValue());
+        }
+        throw new IncompatibleTypesException(getType(), value.getType(), Operation.SUBTRACT);
 	}
 	
 	@Override
 	public Value divide(Value value) {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+        if (value.getType().isCompatible(TypePrimitive.INTEGER)) {
+            if (value.isNull())
+                return new ValueDuration((Long)null);
+            if (((ValueInt)value).getValue() == 0)
+                throw new ArithmeticException("Division by zero.");
+            if (isNull())
+                return new ValueDuration((Long)null);
+            return new ValueDuration(getValue() / ((ValueInt)value).getValue());
+        }
+        throw new IncompatibleTypesException(getType(), value.getType(), Operation.DIVIDE);
 	}
 	
 	@Override
 	public ValueDuration modulo(Value value) {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+        if (value.getType().isCompatible(TypePrimitive.INTEGER)) {
+            if (value.isNull())
+                return new ValueDuration((Long)null);
+            if (((ValueInt)value).getValue() == 0)
+                throw new ArithmeticException("Division by zero.");
+            if (isNull())
+                return new ValueDuration((Long)null);
+            return new ValueDuration(getValue() % ((ValueInt)value).getValue());
+        }
+        throw new IncompatibleTypesException(getType(), value.getType(), Operation.MODULO);
 	}
 	
 	@Override
 	public ValueDuration negate() {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+		return new ValueDuration(isNull() ? null : -getValue());
 	}
 	
 	@Override
 	public Value convertTo(Type type) {
 		// TODO
-		throw new UnsupportedOperationException("Not yet implemented");
+		switch (type.getPrimaryType()) {
+            case DOUBLE:
+                return new ValueDouble(getValue() == null ? null : getValue().doubleValue());
+            case DURATION:
+                return this;
+            case INT:
+                return new ValueInt(getValue());
+            case STRING:
+                return getValue() == null? ValueString.NULL_STRING : new ValueString(Long.toString(getValue()
+                        .longValue()));
+            default:
+                throw new UnsupportedConversionException(getType(), type);
+        }
 	}
 }

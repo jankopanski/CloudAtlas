@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#java -cp $PWD/bin:lib/cup.jar:lib/JLex.jar pl.edu.mimuw.cloudatlas.interpreter.Main
+java -cp ~/.m2/repository/com/github/vbmacher/java-cup-runtime/11b-20160615/java-cup-runtime-11b-20160615.jar:target/classes pl.edu.mimuw.cloudatlas.interpreter.Main

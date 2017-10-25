@@ -14,3 +14,6 @@ cd target/classes
 java pl.edu.mimuw.cloudatlas.App
 Or
 java -cp target/classes pl.edu.mimuw.cloudatlas.App
+
+Tests
+./run_tests

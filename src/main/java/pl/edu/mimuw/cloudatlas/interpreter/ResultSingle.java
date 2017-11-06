@@ -41,6 +41,17 @@ class ResultSingle extends Result {
 		return new ResultSingle(operation.perform(value, right.value));
 	}
 
+	protected ResultColumn binaryOperationTyped(BinaryOperation operation, ResultColumn right) {
+		return right.binaryOperationTyped(operation, this);
+	}
+	public ResultSingle aggregationOperation(AggregationOperation operation) {
+        throw new UnsupportedOperationException("Operation not supported on ResultSingle.");
+    }
+
+    public Result transformOperation(TransformOperation operation) {
+        throw new UnsupportedOperationException("Operation not supported on ResultSingle.");
+    }
+
 	@Override
 	public ResultSingle unaryOperation(UnaryOperation operation) {
 		return new ResultSingle(operation.perform(value));

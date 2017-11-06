@@ -133,6 +133,8 @@ abstract class Result {
 		}
 	};
 
+	protected abstract Result binaryOperationTyped(BinaryOperation operation, ResultColumn right);
+
 	protected abstract Result binaryOperationTyped(BinaryOperation operation, ResultSingle right);
 
 	public Result binaryOperation(BinaryOperation operation, Result right) {
@@ -150,7 +152,7 @@ abstract class Result {
 	public abstract ValueList getColumn();
 
 	public ResultSingle aggregationOperation(AggregationOperation operation) {
-		// TODO
+		// TODOd
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 

@@ -23,11 +23,9 @@ public class MultiEnvironment extends Environment {
     }
 
     public Result getIdent(String ident) {
-        try {
-            return new ResultColumn(rows.stream().map(r -> new ResultSingle(r.getIth(columns.get(ident)))).collect(Collectors.toList()));
-        } catch(NullPointerException exception) {
-            return new ResultSingle(ValueNull.getInstance());
-        }
+        if (columns.get(ident) == null)
+            throw new InternalInterpreterException("Attribute not found in child nodes");
+        return new ResultColumn(rows.stream().map(r -> new ResultSingle(r.getIth(columns.get(ident)))).collect(Collectors.toList()));
     }
 
 }

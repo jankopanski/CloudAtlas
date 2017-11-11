@@ -15,9 +15,8 @@ public class FetcherTest {
         System.out.println("Featcher created");
         while (true) {
             try {
-                System.out.println("fetchInfo()");
                 AttributesMap map = fetcher.fetchInfo();
-                System.out.println("iterate");
+                System.out.println();
                 for (Map.Entry<Attribute, Value> entry : map) {
                     System.out.println(entry.getKey().getName() + ": " + entry.getValue());
                 }

@@ -2,7 +2,6 @@ package pl.edu.mimuw.cloudatlas.fetcher;
 
 import java.io.File;
 import java.io.IOException;
-import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
@@ -23,12 +22,22 @@ public class FetcherServer {
             System.err.println("Usage: java FetcherServer <config_file>");
             System.exit(1);
         }
+        if (System.getSecurityManager() == null) {
+            System.setSecurityManager(new SecurityManager());
+        }
         try {
             Collection<Attribute> attributes = readConfig(args[0]);
-            AttributeFetcher object = new AttributeFetcher(attributes);
-            if (System.getSecurityManager() == null) {
-                System.setSecurityManager(new SecurityManager());
-            }
+            FetcherComputer object = new FetcherComputer(attributes);
+//            SystemInfoCollector systemInfoCollector = new SystemInfoCollector(attributes);
+//            systemInfoCollector.start();
+//            AttributesMap attributesMap = systemInfoCollector.getInfo();
+//            System.out.println("Ala ma kota");
+//            System.out.println(attributesMap.toString());
+//            for (Map.Entry<Attribute, Value> entry : attributesMap) {
+//                System.out.println("Ele ma kota");
+//                System.out.println(entry);
+//            }
+//            systemInfoCollector.interrupt();
             Fetcher stub = (Fetcher) UnicastRemoteObject.exportObject(object, PORT);
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind("Fetcher", stub);

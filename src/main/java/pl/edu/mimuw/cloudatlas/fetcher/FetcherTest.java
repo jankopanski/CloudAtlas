@@ -13,7 +13,7 @@ public class FetcherTest {
         System.out.println("Test active");
         FetcherClient fetcher = new FetcherClient();
         System.out.println("Featcher created");
-//        while (true) {
+        while (true) {
             try {
                 System.out.println("fetchInfo()");
                 AttributesMap map = fetcher.fetchInfo();
@@ -29,6 +29,6 @@ public class FetcherTest {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-//        }
+        }
     }
 }

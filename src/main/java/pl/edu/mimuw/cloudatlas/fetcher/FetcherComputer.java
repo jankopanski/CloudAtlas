@@ -7,12 +7,12 @@ import pl.edu.mimuw.cloudatlas.model.*;
 import java.rmi.RemoteException;
 import java.util.Collection;
 
-public class AttributeFetcher implements Fetcher {
+public class FetcherComputer implements Fetcher {
     public static final int DNS_MAX = 3;
     private Collection<Attribute> attributes;
     private SystemInfo systemInfo;
 
-    public AttributeFetcher(Collection<Attribute> attributes) {
+    public FetcherComputer(Collection<Attribute> attributes) {
         this.attributes = attributes;
         systemInfo = new SystemInfo();
     }
@@ -29,7 +29,8 @@ public class AttributeFetcher implements Fetcher {
     private Value getInfo(Attribute attribute) {
         switch (attribute.getName()) {
             case "cpu_load":
-                return new ValueDouble(systemInfo.getHardware().getProcessor().getSystemLoadAverage());
+//                return new ValueDouble(systemInfo.getHardware().getProcessor().getSystemLoadAverage());
+                return new ValueDouble(systemInfo.getHardware().getProcessor().getSystemCpuLoadBetweenTicks());
             case "free_disk":
                 Long free_space = 0L;
                 for (OSFileStore disc : systemInfo.getOperatingSystem().getFileSystem().getFileStores())

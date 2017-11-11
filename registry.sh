@@ -1,0 +1,3 @@
+cd target/classes
+rmiregistry &
+

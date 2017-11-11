@@ -18,16 +18,17 @@ public class FetcherServer {
     private static final int PORT = 0;
 
     public static void main(String[] args) {
+        System.out.println("It works!");
         if (args.length != 1) {
             System.err.println("Usage: java FetcherServer <config_file>");
             System.exit(1);
         }
         try {
             Collection<Attribute> attributes = readConfig(args[0]);
+            AttributeFetcher object = new AttributeFetcher(attributes);
             if (System.getSecurityManager() == null) {
                 System.setSecurityManager(new SecurityManager());
             }
-            AttributeFetcher object = new AttributeFetcher(attributes);
             Fetcher stub = (Fetcher) UnicastRemoteObject.exportObject(object, PORT);
             Registry registry = LocateRegistry.getRegistry();
             registry.rebind("Fetcher", stub);

@@ -152,7 +152,7 @@ abstract class Result {
 	public abstract ValueList getColumn();
 
 	public ResultSingle aggregationOperation(AggregationOperation operation) {
-		// TODOd
+		// TODO
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 

@@ -10,35 +10,36 @@ import java.util.stream.Collectors;
 
 public class ResultColumn extends Result {
 
-    private final List<ResultSingle> values;
+//    private final List<ResultSingle> values;
+    private final ValueList values;
 
-    public ResultColumn(List<ResultSingle> values) {
-        this.values = values;
+    public ResultColumn(List<Value> values) {
+        this.values = new ValueList(values, TypeCollection.computeElementType(values));
     };
 
     protected ResultColumn binaryOperationTyped(BinaryOperation operation, ResultColumn right) {
-        List<ResultSingle> result = new ArrayList<>();
+        List<Value> result = new ArrayList<>();
         if (values.size() != right.values.size())
             throw new UnsupportedOperationException("Results binary operation on different lengths");
         for (int i = 0; i < values.size(); ++i)
-            result.add(values.get(i).binaryOperationTyped(operation, right.values.get(i)));
+            result.add(new ResultSingle(values.get(i)).binaryOperationTyped(operation, new ResultSingle(right.values.get(i))).getValue());
         return new ResultColumn(result);
     }
 
     @Override
     public ResultColumn binaryOperationTyped(BinaryOperation operation, ResultSingle right) {
-        return new ResultColumn(values.stream().map( (r) -> r.binaryOperationTyped(operation, right)).collect(Collectors.toList()));
+        return new ResultColumn(values.stream().map(r -> (new ResultSingle(r)).binaryOperationTyped(operation, right).getValue()).collect(Collectors.toList()));
     }
 
 
     @Override
     public ResultColumn unaryOperation(final UnaryOperation operation) {
-        return new ResultColumn(values.stream().map( (r) -> r.unaryOperation(operation)).collect(Collectors.toList()));
+        return new ResultColumn(values.stream().map( (r) -> (new ResultSingle(r)).unaryOperation(operation).getValue()).collect(Collectors.toList()));
     }
 
     @Override
     public ValueList getList() {
-        throw new UnsupportedOperationException("Not a ResultList."); //TODO sprawdzić czy z unfoldem lepiej
+        throw new UnsupportedOperationException("Not a ResultList."); //TODO dodać unfold
     }
 
     @Override
@@ -46,8 +47,7 @@ public class ResultColumn extends Result {
 
     @Override
     public ValueList getColumn() {
-        List<Value> list = values.stream().map(ResultSingle::getValue).collect(Collectors.toList());
-        return new ValueList(list, TypeCollection.computeElementType(list));
+        return values;
     }
 
     public ResultSingle aggregationOperation(AggregationOperation operation) {
@@ -55,24 +55,23 @@ public class ResultColumn extends Result {
     }
 
     public Result transformOperation(TransformOperation operation) {
-        List<Value> results = operation.perform(this.getColumn()).getValue();
-        return new ResultColumn(results.stream().map(ResultSingle::new).collect(Collectors.toList()));
+        return new ResultColumn(operation.perform(values));
     }
 
 
     @Override
     public Value getValue() {
-        return getColumn();
+        return values;
     }
 
     @Override
     public Type getType() {
-        return TypeCollection.computeElementType(values.stream().map(ResultSingle::getValue).collect(Collectors.toList()));
+        return TypeCollection.computeElementType(values);
     }
 
     @Override
     public Result random(int size) {
-        List<ResultSingle> list = new ArrayList<>();
+        List<Value> list = new ArrayList<>();
         list.addAll(values);
         if (size >= list.size())
             return new ResultColumn(list);
@@ -82,7 +81,7 @@ public class ResultColumn extends Result {
 
     @Override
     public Result filterNulls() {
-        List<ResultSingle> filtered = values.stream().filter(Objects::nonNull).collect(Collectors.toList());
+        List<Value> filtered = values.stream().filter(Value::isNull).collect(Collectors.toList());
         if (filtered.isEmpty())
             return new ResultSingle(null);
         else
@@ -93,7 +92,7 @@ public class ResultColumn extends Result {
     public Result first(int size) {
         if (size > values.size())
             size = values.size();
-        List<Value> l = values.subList(0, size).stream().map(ResultSingle::getValue).collect(Collectors.toList());
+        List<Value> l = values.subList(0, size);
         return new ResultSingle(new ValueList(l, TypeCollection.computeElementType(l)));
     }
 
@@ -101,7 +100,7 @@ public class ResultColumn extends Result {
     public Result last(int size) {
         if (size > values.size())
             size = values.size();
-        List<Value> l = values.subList(values.size() - size, values.size()).stream().map(ResultSingle::getValue).collect(Collectors.toList());
+        List<Value> l = values.subList(values.size() - size, values.size());
         return new ResultSingle(new ValueList(l, TypeCollection.computeElementType(l)));
     }
 

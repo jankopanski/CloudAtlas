@@ -184,7 +184,7 @@ public class Interpreter {
 		public Table visit(WhereC where, Table table) {
 			Table result = new Table(table);
 			for(TableRow row : table) {
-				Environment env = new Environment(row, table.getColumns());
+				Environment env = new SingleEnvironment(row, table.getColumns());
 				Value value = where.condexpr_.accept(new CondExprInterpreter(), env).getValue();
 				if(getBoolean(value))
 					result.appendRow(row);
@@ -215,9 +215,9 @@ public class Interpreter {
 			Comparator<TableRow> comparator = new Comparator<TableRow>() {
 				@Override
 				public int compare(TableRow row1, TableRow row2) {
-					Environment env1 = new Environment(row1, table.getColumns());
+					Environment env1 = new SingleEnvironment(row1, table.getColumns());
 					Result expr1 = orderItem.condexpr_.accept(new CondExprInterpreter(), env1);
-					Environment env2 = new Environment(row2, table.getColumns());
+					Environment env2 = new SingleEnvironment(row2, table.getColumns());
 					Result expr2 = orderItem.condexpr_.accept(new CondExprInterpreter(), env2);
 					ValuesPair pair = new ValuesPair(expr1, expr2);
 					int result = orderItem.nulls_.accept(new NullsInterpreter(), pair);
@@ -280,13 +280,13 @@ public class Interpreter {
 
 	public class SelItemInterpreter implements SelItem.Visitor<QueryResult, Table> {
 		public QueryResult visit(SelItemC selItem, Table table) {
-			Environment env = new MultiEnvironment(table, table.getColumns());
+			Environment env = new MultiEnvironment(table);
 			Result result = selItem.condexpr_.accept(new CondExprInterpreter(), env);
 			return new QueryResult(result.getValue());
 		}
 
 		public QueryResult visit(AliasedSelItemC selItem, Table table) {
-			Environment env = new MultiEnvironment(table, table.getColumns());
+			Environment env = new MultiEnvironment(table);
 			Result result = selItem.condexpr_.accept(new CondExprInterpreter(), env);
 			return new QueryResult(new Attribute(selItem.qident_), result.getValue());
 		}

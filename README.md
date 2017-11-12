@@ -17,3 +17,10 @@ java -cp target/classes pl.edu.mimuw.cloudatlas.App
 
 Tests  
 ./run_tests
+
+Running Fetcher in IntelliJ Idea  
+Name: Fetcher  
+Main class: pl.edu.mimuw.cloudatlas.fetcher.FetcherServer  
+VM options: -Djava.rmi.server.hostname=localhost -Djava.security.policy=common.policy  
+Program arguments: fetcher.ini  
+Working directory: /home/user/IdeaProjects/CloudAtlas

@@ -4,6 +4,10 @@
     max-width: 50%;
 }
 
+.inForm {
+    margin: 40px 40px 40px 40px;
+}
+
 #close {
     float:right;
     display:inline-block;

@@ -6,21 +6,14 @@ import static spark.Spark.post;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.gson.Gson;
 import lombok.Data;
-import spark.Request;
-import spark.Response;
-import spark.Route;
 import spark.Spark;
 
-import java.awt.*;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
 
 //Duzo bsu bo to z tutoriala, zostawione, żeby było widać jak to napisać
@@ -107,8 +100,6 @@ public class Client {
             }
         });
 
-
-
         post("/connect", ((request, response) -> {
             String aname = request.queryMap("aname").value();
             response.cookie("aname", aname);
@@ -116,6 +107,18 @@ public class Client {
             response.type("text/html");
             return "<html><head><script>document.location.href = '/agent.html'</script></head><body></body></html>";
         }));
+
+        post("/request", "application/json", (((request, response) -> {
+            String json = request.body();
+            Gson g = new Gson();
+            ClientRequest req = g.fromJson(json, ClientRequest.class);
+
+            //TODO tutaj użyć request do rmi z agentem
+
+            response.status(200);
+            response.type("text/html");
+            return "";
+        })));
     }
 }
 

@@ -35,7 +35,26 @@ function refresh() {
 }
 
 function refreshReading(reading) {
-    //reading.textContent += " refreshed";
+    var attrQ = reading.attrQ;
+    //alert(attrQ);
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function () {
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                console.log("ok" + attrQ);
+            }
+            else {
+                console.error("Failed refresh request" + attrQ);
+                console.error(this.status);
+            }
+        }
+
+
+    };
+    req.open("POST", "request", true);
+    req.setRequestHeader("Content-Type", "application/json");
+    var qJson = JSON.stringify({agent: aname, type: "attrQ", query: attrQ});
+    req.send(qJson);
 }
 
 function readAttr() {

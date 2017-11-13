@@ -13,23 +13,23 @@
 </head>
 <body>
     <a href="index.html", onclick="clearCookies()">disconnect</a>
-     <form>
+     <form class="inForm">
          read attribute<br>
          <input id="attr" type="text", name="attr">
          <input id="attrBu" type="button" value="run" onclick="readAttr();" />
     </form>
-    <form>
+    <form class="inForm">
          install and uninstall query<br>
          <input type="text", name="query">
          <input id="instBu" type="button" value="install" onclick="installQ();" />
          <input id="uninBu" type="button" value="uninstall" onclick="uninstallQ();" />
     </form>
-    <form>
+    <form class="inForm">
          set fallback contacts<br>
          <input type="text", name="con">
          <input id="setCoBu" type="button" value="set" onclick="setCont();" />
     </form>
     <br><br>
-    <div id="readings" style="display: flex; justify-content: flex-start; flex-wrap: wrap"><div>a</div><div>b</div></div>
+    <div id="readings" style="display: flex; justify-content: flex-start; flex-wrap: wrap"></div>
 </body>
 </html>

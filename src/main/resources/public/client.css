@@ -14,3 +14,7 @@
     padding:2px 5px;
     background:#ccc;
 }
+
+#confirmBox {
+    height: 2em;
+}

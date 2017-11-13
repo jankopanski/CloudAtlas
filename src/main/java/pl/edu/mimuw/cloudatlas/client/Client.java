@@ -112,7 +112,7 @@ public class Client {
             String json = request.body();
             Gson g = new Gson();
             ClientRequest req = g.fromJson(json, ClientRequest.class);
-
+            System.out.println(req.getQuery());
             //TODO tutaj użyć request do rmi z agentem
 
             response.status(200);

@@ -41,7 +41,11 @@ public class AgentComputer implements Agent {
     @Override
     public synchronized void installQuery(String query) {
         // TODO interpreter
-
+//        executeQuery()
+        // code to erase
+        for (Map.Entry<Attribute, Value> entry: zone.getAttributes()) {
+            System.out.println(entry.getKey().getName() + ": " + entry.getValue().toString());
+        }
     }
 
     @Override
@@ -53,12 +57,14 @@ public class AgentComputer implements Agent {
     public synchronized void setValues(PathName zone, AttributesMap attributes) {
         ZMI zmi = getZMI(zone);
         if (zmi == null || !zmi.getSons().isEmpty()) return;
-        AttributesMap zoneAttributes = zmi.getAttributes();
-        for (Map.Entry<Attribute, Value> entry : attributes) {
-            if (zoneAttributes.getOrNull(entry.getKey()) != null) {
-                zoneAttributes.addOrChange(entry);
-            }
-        }
+        zmi.getAttributes().addOrChange(attributes);
+        // TODO Should setValues add new attributes or only modify existing attributes
+//        AttributesMap zoneAttributes = zmi.getAttributes();
+//        for (Map.Entry<Attribute, Value> entry : attributes) {
+//            if (zoneAttributes.getOrNull(entry.getKey()) != null) {
+//                zoneAttributes.addOrChange(entry);
+//            }
+//        }
     }
 
     @Override

@@ -128,7 +128,7 @@ public class Client {
             ClientRequest req = g.fromJson(json, ClientRequest.class);
             System.out.println(req.getQuery());
             //TODO tutaj użyć request do rmi z agentem
-            agent.installQuery();
+//            agent.installQuery();
 
             response.status(200);
             response.type("text/html");
@@ -140,7 +140,7 @@ public class Client {
         if (System.getSecurityManager() == null)
             System.setSecurityManager(new SecurityManager());
         Registry registry = LocateRegistry.getRegistry(AGENT_HOST);
-        return (Agent) registry.lookup("Fetcher");
+        return (Agent) registry.lookup("Agent");
     }
 }
 

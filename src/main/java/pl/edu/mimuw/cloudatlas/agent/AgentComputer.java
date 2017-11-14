@@ -18,39 +18,39 @@ public class AgentComputer implements Agent {
             root = root.getFather();
     }
 
-    // TODO should getManagedZones return Set<PathName>
     @Override
-    public Set<ZMI> getManagedZones() {
-        Set<ZMI> managedZones = new HashSet<>();
+    public synchronized Set<PathName> getManagedZones() {
+        Set<PathName> managedZones = new HashSet<>();
         ZMI zmi = zone;
         while (zmi.getFather() != null) {
-            managedZones.addAll(zmi.getSons());
+            for (ZMI son : zmi.getSons())
+                managedZones.add(getPathName(son));
             zmi = zmi.getFather();
         }
-        managedZones.add(zmi);
+        managedZones.add(getPathName(zmi));
         return managedZones;
     }
 
     @Override
-    public AttributesMap getValues(PathName zone) {
+    public synchronized AttributesMap getValues(PathName zone) {
         ZMI zmi = getZMI(zone);
         if (zmi == null) return new AttributesMap();
         return zmi.getAttributes();
     }
 
     @Override
-    public void installQuery(String query) {
+    public synchronized void installQuery(String query) {
         // TODO interpreter
 
     }
 
     @Override
-    public void uninstallQuery(String queryName) {
+    public synchronized void uninstallQuery(String queryName) {
         // TODO interpreter
     }
 
     @Override
-    public void setValues(PathName zone, AttributesMap attributes) {
+    public synchronized void setValues(PathName zone, AttributesMap attributes) {
         ZMI zmi = getZMI(zone);
         if (zmi == null || !zmi.getSons().isEmpty()) return;
         AttributesMap zoneAttributes = zmi.getAttributes();
@@ -62,12 +62,12 @@ public class AgentComputer implements Agent {
     }
 
     @Override
-    public void setValues(AttributesMap attributes) {
+    public synchronized void setValues(AttributesMap attributes) {
         setValues(getPathName(zone), attributes);
     }
 
     @Override
-    public void setContacts(Set<ValueContact> contacts) {
+    public synchronized void setContacts(Set<ValueContact> contacts) {
         this.contacts = contacts;
     }
 

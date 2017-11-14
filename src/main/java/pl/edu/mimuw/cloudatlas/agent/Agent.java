@@ -3,14 +3,13 @@ package pl.edu.mimuw.cloudatlas.agent;
 import pl.edu.mimuw.cloudatlas.model.AttributesMap;
 import pl.edu.mimuw.cloudatlas.model.PathName;
 import pl.edu.mimuw.cloudatlas.model.ValueContact;
-import pl.edu.mimuw.cloudatlas.model.ZMI;
 
 import java.rmi.Remote;
 import java.util.Set;
 
 public interface Agent extends Remote {
     /** Returns the set of zones on which the agent stores information. */
-    public Set<ZMI> getManagedZones();
+    public Set<PathName> getManagedZones();
 
     /** Returns the values of attributes of a given zone. */
     public AttributesMap getValues(PathName zone);

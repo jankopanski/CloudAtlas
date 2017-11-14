@@ -27,7 +27,6 @@ public class FetcherClient {
         } catch (Exception e) {
             registry = null;
             stub = null;
-            System.err.println("Fetch error: " + e.getMessage());
             throw e;
         }
     }

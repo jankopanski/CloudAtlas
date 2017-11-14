@@ -8,10 +8,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import lombok.Data;
+import pl.edu.mimuw.cloudatlas.agent.Agent;
+import pl.edu.mimuw.cloudatlas.fetcher.Fetcher;
 import spark.Spark;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.*;
 import java.util.List;
 
@@ -20,6 +26,7 @@ import java.util.List;
 public class Client {
 
     private static final int HTTP_BAD_REQUEST = 400;
+    private static final String AGENT_HOST = "localhost";
 
     interface Validable {
         boolean isValid();
@@ -78,6 +85,13 @@ public class Client {
     }
 
     public static void main( String[] args) {
+        try {
+            Agent agent = initializeAgent();
+        } catch (RemoteException | NotBoundException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
         Model model = new Model();
 
         Spark.staticFileLocation("/public");
@@ -114,11 +128,19 @@ public class Client {
             ClientRequest req = g.fromJson(json, ClientRequest.class);
             System.out.println(req.getQuery());
             //TODO tutaj użyć request do rmi z agentem
+            agent.installQuery();
 
             response.status(200);
             response.type("text/html");
             return "";
         })));
+    }
+
+    private static Agent initializeAgent() throws RemoteException, NotBoundException {
+        if (System.getSecurityManager() == null)
+            System.setSecurityManager(new SecurityManager());
+        Registry registry = LocateRegistry.getRegistry(AGENT_HOST);
+        return (Agent) registry.lookup("Fetcher");
     }
 }
 

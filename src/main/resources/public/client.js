@@ -50,12 +50,12 @@ function refreshReading(reading) {
     req.onreadystatechange = function () {
         if (this.readyState == 4) {
             if (this.status == 200) {
-                console.log("ok" + attrQ);
+                console.log(this.responseText);
                 if (reading.isPlot) {
                    Plotly.newPlot(reading.contId, [{x: [1,2,3], y:[counter % 7, counter * counter % 7, (Math.sqrt(counter)) % 7], type: 'scatter'}], {title: attrQ});
                 }
                 else {
-                    document.getElementById(reading.contId).innerHTML = "<br>" + attrQ + ":" + counter++;
+                    document.getElementById(reading.contId).innerHTML = "<br>" + attrQ + ":" + JSON.parse(this.responseText).value;//counter++;
                 }
 
             }

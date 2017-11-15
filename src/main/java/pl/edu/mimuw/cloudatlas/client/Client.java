@@ -9,6 +9,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import lombok.Data;
 import pl.edu.mimuw.cloudatlas.agent.Agent;
+import pl.edu.mimuw.cloudatlas.model.AttributesMap;
+import pl.edu.mimuw.cloudatlas.model.PathName;
+import pl.edu.mimuw.cloudatlas.model.Value;
 import spark.Spark;
 
 import java.io.IOException;
@@ -21,66 +24,31 @@ import java.util.*;
 import java.util.List;
 
 
-//Duzo bsu bo to z tutoriala, zostawione, żeby było widać jak to napisać
 public class Client {
 
     private static final int HTTP_BAD_REQUEST = 400;
     private static final String AGENT_HOST = "localhost";
     private static Agent agent;
+    private static Gson g = new Gson();
 
-    interface Validable {
-        boolean isValid();
-    }
-
-    @Data
-    static class NewPostPayload {
-        private String title;
-        private List categories = new LinkedList<>();
-        private String content;
-
-        public boolean isValid() {
-            return title != null && !title.isEmpty() && !categories.isEmpty();
-        }
-    }
-
-    // In a real application you may want to use a DB, for this example we just store the posts in memory
-    public static class Model {
-        private int nextId = 1;
-        private Map posts = new HashMap<>();
-
-        @Data
-        class Post {
-            private int id;
-            private String title;
-            private List categories;
-            private String content;
-        }
-
-        public int createPost(String title, String content, List categories){
-            int id = nextId++;
-            Post post = new Post();
-            post.setId(id);
-            post.setTitle(title);
-            post.setContent(content);
-            post.setCategories(categories);
-            posts.put(id, post);
-            return id;
-        }
-
-        public List getAllPosts(){
-            return null;//posts.keySet().stream().sorted().map((id) -> posts.get(id)).collect(Collectors.toList());
-        }
-    }
-
-    public static String dataToJson(Object data) {
+    public static String handleRequest(ClientRequest req) throws RemoteException {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-            StringWriter sw = new StringWriter();
-            mapper.writeValue(sw, data);
-            return sw.toString();
-        } catch (IOException e){
-            throw new RuntimeException("IOException from a StringWriter?");
+            switch (req.getType()) {
+                case "attrQ":
+                    AttributesMap map = agent.getValues(new PathName(req.getAgent()));
+                    Value ret = map.get(req.getQuery());
+                    if (ret == null) {
+                        return "";
+                    }
+                    else {
+                        return g.toJson(ret);
+                    }
+                default:
+                    return "";
+            }
+        } catch (RemoteException e) {
+            return "";
+
         }
     }
 
@@ -92,27 +60,9 @@ public class Client {
             System.exit(1);
         }
 
-        Model model = new Model();
 
         Spark.staticFileLocation("/public");
         // insert a post (using HTTP post method)
-        post("/posts", (request, response) -> {
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                NewPostPayload creation = mapper.readValue(request.body(), NewPostPayload.class);
-                if (!creation.isValid()) {
-                    response.status(HTTP_BAD_REQUEST);
-                    return "";
-                }
-                int id = model.createPost(creation.getTitle(), creation.getContent(), creation.getCategories());
-                response.status(200);
-                response.type("application/json");
-                return id;
-            } catch (JsonParseException jpe) {
-                response.status(HTTP_BAD_REQUEST);
-                return "";
-            }
-        });
 
         post("/connect", ((request, response) -> {
             String aname = request.queryMap("aname").value();
@@ -124,15 +74,19 @@ public class Client {
 
         post("/request", "application/json", (((request, response) -> {
             String json = request.body();
-            Gson g = new Gson();
             ClientRequest req = g.fromJson(json, ClientRequest.class);
-            System.out.println(req.getQuery());
+            //System.out.println(req.getQuery());
             //TODO tutaj użyć request do rmi z agentem
-            agent.installQuery(req.getQuery());
-
+            //agent.installQuery(req.getQuery());
+            String body = handleRequest(req);
+            response.type("application/json");
+            if (body.equals("")) {
+                response.status(404);
+                return "";
+            }
             response.status(200);
-            response.type("text/html");
-            return "";
+            return body;
+
         })));
     }
 

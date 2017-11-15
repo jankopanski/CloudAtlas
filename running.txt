@@ -1,0 +1,18 @@
+1) registry.sh
+
+Fetcher:
+Main class: pl.edu.mimuw.cloudatlas.fetcher.FetcherServer
+VM options: -Djava.rmi.server.hostname=localhost -Djava.security.policy=common.policy
+Program arguments: fetcher.ini
+
+Agent:
+pl.edu.mimuw.cloudatlas.agent.Main
+-Djava.rmi.server.hostname=localhost -Djava.security.policy=common.policy
+
+InterpreterCLI:
+pl.edu.mimuw.cloudatlas.agent.InterpreterCLI
+-Djava.security.policy=common.policy
+
+Client:
+pl.edu.mimuw.cloudatlas.client.Client
+-Djava.security.policy=common.policy

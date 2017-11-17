@@ -72,7 +72,9 @@ public class TypePrimitive extends Type {
 	 * Time type.
 	 */
 	public static final TypePrimitive TIME = new TypePrimitive(PrimaryType.TIME);
-	
+
+	public static final TypePrimitive CERT = new TypePrimitive(PrimaryType.CERT);
+
 	private TypePrimitive(PrimaryType primaryType) {
 		super(primaryType);
 		switch(primaryType) {
@@ -84,6 +86,7 @@ public class TypePrimitive extends Type {
 			case NULL:
 			case STRING:
 			case TIME:
+			case CERT:
 				break;
 			default:
 				throw new IllegalArgumentException(

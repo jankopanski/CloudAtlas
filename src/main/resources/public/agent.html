@@ -6,38 +6,43 @@
     <link rel="stylesheet" type="text/css" href="client.css">
     <script src="client.js"></script>
     <script src="plotly-latest.min.js"></script>
-    <script>
-        fillTitle();
-        setTimeout(refresh, 1000);
-    </script>
 
 </head>
-<body>
+<body style>
     <a href="index.html", onclick="clearCookies()">disconnect</a>
     <input type="number" style="float: right" placeholder="2000">
     <input type="button" value="set refresh interval (ms)" onclick="setRefresh(this.previousSibling.previousSibling)" style="float: right">
+    <div style="display: flex; justify-content: space-between; width: 100%">
+
+    <div style="width: 70%">
      <form class="inForm">
          read attribute<br>
          <input id="attr" type="text", name="attr">
-         <input id="attrBu" type="button" value="run" onclick="readAttr(false);" />
-         <input id="attrBu" type="button" value="plot" onclick="readAttr(true);" />
+         <input type="button" value="run" onclick="readAttr(false, true);" />
+         <input type="button" value="run no sync" onclick="readAttr(false, false);" />
+         <input type="button" value="plot" onclick="readAttr(true, true);" />
     </form>
     <form class="inForm">
          install and uninstall query<br>
         <textarea cols="80" rows="5" name="query"></textarea>
          <input id="instBu" type="button", value="install"
-                onclick="singleRequest(this.previousSibling.previousSibling, 'install');" />
+                onclick="singleRequest(this.previousSibling.previousSibling, 'installQ');" />
          <input id="uninBu" type="button" value="uninstall"
-                onclick="singleRequest(this.previousSibling.previousSibling.previousSibling.previousSibling, 'uninstall');" />
+                onclick="singleRequest(this.previousSibling.previousSibling.previousSibling.previousSibling, 'uninstallQ');" />
     </form>
     <form class="inForm">
          set fallback contacts<br>
          <input type="text", name="con">
          <input id="setCoBu" type="button" value="set" onclick="singleRequest(this.previousSibling.previousSibling, 'setCon');" />
     </form>
+    </div>
+        <div><div style="display: block; position: relative; top:50%; transform: translateY(-50%)">Available attributes:</div></div>
+        <div id="attrList" style="float: right; padding: 40px"></div>
+    </div>
     <div id="confirmBox"></div>
     <br><br>
     <div id="readings" style="display: flex; justify-content: flex-start; flex-wrap: wrap"></div>
     <div id="plots" style="display: flex; justify-content: flex-start; flex-wrap: wrap"></div>
+    <div id="readingsNoRefresh" style="display: flex; justify-content: flex-start; flex-wrap: wrap"></div>
 </body>
 </html>

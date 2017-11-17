@@ -7,8 +7,10 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import pl.edu.mimuw.cloudatlas.agent.Agent;
+import pl.edu.mimuw.cloudatlas.model.Attribute;
 import pl.edu.mimuw.cloudatlas.model.AttributesMap;
 import pl.edu.mimuw.cloudatlas.model.PathName;
 import pl.edu.mimuw.cloudatlas.model.Value;
@@ -31,24 +33,72 @@ public class Client {
     private static Agent agent;
     private static Gson g = new Gson();
 
-    public static String handleRequest(ClientRequest req) throws RemoteException {
+    private enum Status {OK, NOT_FOUND, INVALID, EXCEPTION};
+
+    @AllArgsConstructor @Data
+    public static class RequestResult {
+        public Status status;
+        public String response;
+
+        public int statusCode() {
+            switch (status) {
+                case OK:
+                    return 200;
+                case NOT_FOUND:
+                    return 404;
+                case INVALID:
+                    return 400;
+                case EXCEPTION:
+                    return 500;
+                default:
+                    return 500;
+
+            }
+        }
+
+    }
+
+    private static RequestResult handleRequest(ClientRequest req) throws RemoteException {
+        AttributesMap map;
+        RequestResult result = new RequestResult(Status.INVALID, "");
         try {
             switch (req.getType()) {
                 case "attrQ":
-                    AttributesMap map = agent.getValues(new PathName(req.getAgent()));
-                    Value ret = map.get(req.getQuery());
+                    map = agent.getValues(new PathName(req.getAgent()));
+                    Value ret = map.getOrNull(req.getQuery());
                     if (ret == null) {
-                        return "";
+                       result.setStatus(Status.NOT_FOUND);
                     }
                     else {
-                        return g.toJson(ret);
+                        result.setStatus(Status.OK);
+                        result.setResponse(g.toJson(ret));
                     }
+                    break;
+                case "getAttrs":
+                    map = agent.getValues(new PathName(req.getAgent()));
+                    StringBuilder response = new StringBuilder();
+                    for (Map.Entry<Attribute, Value> e: map) {
+                        if (!Attribute.isQuery(e.getKey()))
+                            response.append(e.getKey()).append("<br>");
+                    }
+                    result.setStatus(Status.OK);
+                    result.setResponse(response.toString());
+                    break;
+                case "installQ":
+                    if (agent.installQuery(new PathName(req.getAgent()), req.getQuery()))
+                        result.setStatus(Status.OK);
+                    break;
+                case "uninstallQ":
+                    if (agent.uninstallQuery(new PathName(req.getAgent()), req.getQuery()))
+                        result.setStatus(Status.OK);
+                    break;
                 default:
-                    return "";
+                    break;
             }
+            return result;
         } catch (RemoteException e) {
-            return "";
-
+            result.setStatus(Status.EXCEPTION);
+            return result;
         }
     }
 
@@ -78,14 +128,10 @@ public class Client {
             //System.out.println(req.getQuery());
             //TODO tutaj użyć request do rmi z agentem
             //agent.installQuery(req.getQuery());
-            String body = handleRequest(req);
+            RequestResult result = handleRequest(req);
             response.type("application/json");
-            if (body.equals("")) {
-                response.status(404);
-                return "";
-            }
-            response.status(200);
-            return body;
+            response.status(result.statusCode());
+            return result.getResponse();
 
         })));
     }

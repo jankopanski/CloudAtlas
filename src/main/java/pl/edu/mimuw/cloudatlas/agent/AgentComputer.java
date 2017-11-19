@@ -15,7 +15,6 @@ import java.util.*;
 public class AgentComputer implements Agent {
     private ZMI root, zone;
     private Set<ValueContact> contacts;
-//    private HashMap<String, Set<Str>>
 
     public AgentComputer(ZMI zone) {
         this.zone = zone;
@@ -96,20 +95,11 @@ public class AgentComputer implements Agent {
 
         queries.add(splitted[splitted.length - 1].trim());
 
-        System.out.println(names);
-        System.out.println(queries);
-
         for (int i = 0; i < names.size(); ++i) {
             if (!executeQueries(zmi, names.get(i), queries.get(i)))
                 return false;
         }
-        //return executeQueries(getZMI(zone), query);
         return true;
-//        executeQuery()
-        // code to erase
-        //for (Map.Entry<Attribute, Value> entry: zone.getAttributes()) {
-        //    System.out.println(entry.getKey().getName() + ": " + entry.getValue().toString());
-        //}
     }
 
     public static void removeCert(ZMI zmi, String queryName) {
@@ -163,6 +153,7 @@ public class AgentComputer implements Agent {
     @Override
     public synchronized void setContacts(Set<ValueContact> contacts) {
         this.contacts = contacts;
+        System.out.println(contacts);
     }
 
     private static String getName(ZMI zmi) {

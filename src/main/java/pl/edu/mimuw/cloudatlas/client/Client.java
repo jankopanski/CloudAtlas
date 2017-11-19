@@ -10,14 +10,14 @@ import com.google.gson.Gson;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import pl.edu.mimuw.cloudatlas.agent.Agent;
-import pl.edu.mimuw.cloudatlas.model.Attribute;
-import pl.edu.mimuw.cloudatlas.model.AttributesMap;
-import pl.edu.mimuw.cloudatlas.model.PathName;
-import pl.edu.mimuw.cloudatlas.model.Value;
+import pl.edu.mimuw.cloudatlas.model.*;
 import spark.Spark;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -58,6 +58,37 @@ public class Client {
 
     }
 
+    private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
+            throws UnknownHostException {
+        return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
+                ip1, ip2, ip3, ip4
+        }));
+    }
+
+    private static Set<ValueContact> prepareContacts(String input) {
+        String[] conts = input.split(";");
+        HashSet<ValueContact> result = new HashSet<>();
+        for (String cont : conts) {
+            String[] pair = cont.split(":");
+            if (pair.length != 2) {
+                System.out.println("2");
+                return null;
+            }
+            String[] bytes = pair[1].trim().split("\\.");
+            if (bytes.length != 4) {
+                System.out.println(bytes.length);
+                return null;
+            }
+            try {
+                result.add(createContact(pair[0].trim(), Byte.valueOf(bytes[0]), Byte.valueOf(bytes[1]), Byte.valueOf(bytes[2]), Byte.valueOf(bytes[3])));
+            } catch (UnknownHostException e) {
+                System.out.println("ex");
+                return null;
+            }
+        }
+        return result;
+    }
+
     private static RequestResult handleRequest(ClientRequest req) throws RemoteException {
         AttributesMap map;
         RequestResult result = new RequestResult(Status.INVALID, "");
@@ -92,6 +123,12 @@ public class Client {
                     if (agent.uninstallQuery(new PathName(req.getAgent()), req.getQuery()))
                         result.setStatus(Status.OK);
                     break;
+                case "setCon":
+                    Set<ValueContact> contacts = prepareContacts(req.getQuery());
+                    if (contacts != null) {
+                        agent.setContacts(contacts);
+                        result.setStatus(Status.OK);
+                    }
                 default:
                     break;
             }
@@ -115,11 +152,15 @@ public class Client {
         // insert a post (using HTTP post method)
 
         post("/connect", ((request, response) -> {
-            String aname = request.queryMap("aname").value();
-            response.cookie("aname", aname);
-            response.status(200);
+            String aname = request.body();
+            if (agent.getManagedZones().contains(new PathName(aname)))
+                response.status(200);
+            else {
+                response.status(404);
+                System.out.println(agent.getManagedZones());
+            }
             response.type("text/html");
-            return "<html><head><script>document.location.href = '/agent.html'</script></head><body></body></html>";
+            return "";
         }));
 
         post("/request", "application/json", (((request, response) -> {

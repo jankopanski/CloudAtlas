@@ -4,12 +4,15 @@
     <meta charset="UTF-8">
     <title></title>
     <link rel="stylesheet" type="text/css" href="client.css">
+    <script src="cookies.js"></script>
     <script src="client.js"></script>
     <script src="plotly-latest.min.js"></script>
 
 </head>
 <body style>
     <a href="index.html", onclick="clearCookies()">disconnect</a>
+    <input type="text">
+    <input type="button" value="change agent" onclick="changeAgent(this.previousSibling.previousSibling.value)">
     <input type="number" style="float: right" placeholder="2000">
     <input type="button" value="set refresh interval (ms)" onclick="setRefresh(this.previousSibling.previousSibling)" style="float: right">
     <div style="display: flex; justify-content: space-between; width: 100%">

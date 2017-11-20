@@ -22,13 +22,9 @@ public class Main {
         }
 
         Agent agent = new AgentComputer(zone);
-        Thread server = new Thread(new AgentServer(agent));
-        Thread fetcher = new Thread(new SystemInformationUpdater(agent));
-        server.start();
-//        fetcher.start();
-        fetcher.run();
-//        fetcher.interrupt();
-        server.interrupt();
+//        Thread server = new Thread(new AgentServer(agent));
+        AgentServer server = new AgentServer(agent);
+        server.run();
     }
 
     private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)

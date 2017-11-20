@@ -9,4 +9,4 @@ SLF4J=$MAVEN/org/slf4j/slf4j-simple/1.7.7/slf4j-simple-1.7.7.jar
 THREETEN=$MAVEN/org/threeten/threetenbp/1.3.6/threetenbp-1.3.6.jar
 CLASSPATH=$INI4J:$OSHI:$JNAP:$JNA:$THREETEN:$SLF4JAPI:$SLF4J:target/classes
 
-java -cp $CLASSPATH -Djava.rmi.server.hostname=localhost -Djava.security.policy=common.policy pl.edu.mimuw.cloudatlas.fetcher.FetcherServer fetcher.ini &
+java -cp $CLASSPATH -Djava.rmi.server.hostname=localhost -Djava.security.policy=common.policy pl.edu.mimuw.cloudatlas.fetcher.Fetcher fetcher.ini &

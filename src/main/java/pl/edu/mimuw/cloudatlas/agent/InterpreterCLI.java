@@ -15,7 +15,7 @@ public class InterpreterCLI {
         Agent agent = initializeAgent();
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         String query = bufferedReader.readLine();
-        agent.installQuery(query);
+        agent.installQuery(null, query);
     }
 
     private static Agent initializeAgent() throws RemoteException, NotBoundException {

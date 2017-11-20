@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <script src="cookies.js"></script>
 </head>
 <body>
-<form action="/connect" method="post">
   Agent's name: <input type="text" name="aname"><br>
-  <input type="submit" value="Submit">
+  <input type="submit" value="Submit" onclick="
+    setAgent(this.previousSibling.previousSibling.previousSibling.value, function() {
+        document.location.href = 'agent.html';
+    });">
 </form>
 </body>
 </html>

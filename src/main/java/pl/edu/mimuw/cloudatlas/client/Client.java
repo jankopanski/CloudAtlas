@@ -7,12 +7,17 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import pl.edu.mimuw.cloudatlas.agent.Agent;
+import pl.edu.mimuw.cloudatlas.model.*;
 import spark.Spark;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -21,66 +26,116 @@ import java.util.*;
 import java.util.List;
 
 
-//Duzo bsu bo to z tutoriala, zostawione, żeby było widać jak to napisać
 public class Client {
 
     private static final int HTTP_BAD_REQUEST = 400;
     private static final String AGENT_HOST = "localhost";
     private static Agent agent;
+    private static Gson g = new Gson();
 
-    interface Validable {
-        boolean isValid();
+    private enum Status {OK, NOT_FOUND, INVALID, EXCEPTION};
+
+    @AllArgsConstructor @Data
+    public static class RequestResult {
+        public Status status;
+        public String response;
+
+        public int statusCode() {
+            switch (status) {
+                case OK:
+                    return 200;
+                case NOT_FOUND:
+                    return 404;
+                case INVALID:
+                    return 400;
+                case EXCEPTION:
+                    return 500;
+                default:
+                    return 500;
+
+            }
+        }
+
     }
 
-    @Data
-    static class NewPostPayload {
-        private String title;
-        private List categories = new LinkedList<>();
-        private String content;
-
-        public boolean isValid() {
-            return title != null && !title.isEmpty() && !categories.isEmpty();
-        }
+    private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
+            throws UnknownHostException {
+        return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
+                ip1, ip2, ip3, ip4
+        }));
     }
 
-    // In a real application you may want to use a DB, for this example we just store the posts in memory
-    public static class Model {
-        private int nextId = 1;
-        private Map posts = new HashMap<>();
-
-        @Data
-        class Post {
-            private int id;
-            private String title;
-            private List categories;
-            private String content;
+    private static Set<ValueContact> prepareContacts(String input) {
+        String[] conts = input.split(";");
+        HashSet<ValueContact> result = new HashSet<>();
+        for (String cont : conts) {
+            String[] pair = cont.split(":");
+            if (pair.length != 2) {
+                System.out.println("2");
+                return null;
+            }
+            String[] bytes = pair[1].trim().split("\\.");
+            if (bytes.length != 4) {
+                System.out.println(bytes.length);
+                return null;
+            }
+            try {
+                result.add(createContact(pair[0].trim(), Byte.valueOf(bytes[0]), Byte.valueOf(bytes[1]), Byte.valueOf(bytes[2]), Byte.valueOf(bytes[3])));
+            } catch (UnknownHostException e) {
+                System.out.println("ex");
+                return null;
+            }
         }
-
-        public int createPost(String title, String content, List categories){
-            int id = nextId++;
-            Post post = new Post();
-            post.setId(id);
-            post.setTitle(title);
-            post.setContent(content);
-            post.setCategories(categories);
-            posts.put(id, post);
-            return id;
-        }
-
-        public List getAllPosts(){
-            return null;//posts.keySet().stream().sorted().map((id) -> posts.get(id)).collect(Collectors.toList());
-        }
+        return result;
     }
 
-    public static String dataToJson(Object data) {
+    private static RequestResult handleRequest(ClientRequest req) throws RemoteException {
+        AttributesMap map;
+        RequestResult result = new RequestResult(Status.INVALID, "");
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.enable(SerializationFeature.INDENT_OUTPUT);
-            StringWriter sw = new StringWriter();
-            mapper.writeValue(sw, data);
-            return sw.toString();
-        } catch (IOException e){
-            throw new RuntimeException("IOException from a StringWriter?");
+            switch (req.getType()) {
+                case "attrQ":
+                    map = agent.getValues(new PathName(req.getAgent()));
+                    Value ret = map.getOrNull(req.getQuery());
+                    if (ret == null) {
+                       result.setStatus(Status.NOT_FOUND);
+                    }
+                    else {
+                        result.setStatus(Status.OK);
+                        result.setResponse(g.toJson(ret));
+                    }
+                    break;
+                case "getAttrs":
+                    map = agent.getValues(new PathName(req.getAgent()));
+                    StringBuilder response = new StringBuilder();
+                    for (Map.Entry<Attribute, Value> e: map) {
+                        if (!Attribute.isQuery(e.getKey()))
+                            response.append(e.getKey()).append("<br>");
+                    }
+                    result.setStatus(Status.OK);
+                    result.setResponse(response.toString());
+                    break;
+                case "installQ":
+                    if (agent.installQuery(new PathName(req.getAgent()), req.getQuery()))
+                        result.setStatus(Status.OK);
+                    break;
+                case "uninstallQ":
+                    if (agent.uninstallQuery(new PathName(req.getAgent()), req.getQuery()))
+                        result.setStatus(Status.OK);
+                    break;
+                case "setCon":
+                    Set<ValueContact> contacts = prepareContacts(req.getQuery());
+                    if (contacts != null) {
+                        agent.setContacts(contacts);
+                        result.setStatus(Status.OK);
+                    }
+                default:
+                    break;
+            }
+            return result;
+        } catch (RemoteException e) {
+            result.setStatus(Status.EXCEPTION);
+            return result;
         }
     }
 
@@ -92,47 +147,33 @@ public class Client {
             System.exit(1);
         }
 
-        Model model = new Model();
 
         Spark.staticFileLocation("/public");
         // insert a post (using HTTP post method)
-        post("/posts", (request, response) -> {
-            try {
-                ObjectMapper mapper = new ObjectMapper();
-                NewPostPayload creation = mapper.readValue(request.body(), NewPostPayload.class);
-                if (!creation.isValid()) {
-                    response.status(HTTP_BAD_REQUEST);
-                    return "";
-                }
-                int id = model.createPost(creation.getTitle(), creation.getContent(), creation.getCategories());
-                response.status(200);
-                response.type("application/json");
-                return id;
-            } catch (JsonParseException jpe) {
-                response.status(HTTP_BAD_REQUEST);
-                return "";
-            }
-        });
 
         post("/connect", ((request, response) -> {
-            String aname = request.queryMap("aname").value();
-            response.cookie("aname", aname);
-            response.status(200);
+            String aname = request.body();
+            if (agent.getManagedZones().contains(new PathName(aname)))
+                response.status(200);
+            else {
+                response.status(404);
+                System.out.println(agent.getManagedZones());
+            }
             response.type("text/html");
-            return "<html><head><script>document.location.href = '/agent.html'</script></head><body></body></html>";
+            return "";
         }));
 
         post("/request", "application/json", (((request, response) -> {
             String json = request.body();
-            Gson g = new Gson();
             ClientRequest req = g.fromJson(json, ClientRequest.class);
-            System.out.println(req.getQuery());
+            //System.out.println(req.getQuery());
             //TODO tutaj użyć request do rmi z agentem
-            agent.installQuery(req.getQuery());
+            //agent.installQuery(req.getQuery());
+            RequestResult result = handleRequest(req);
+            response.type("application/json");
+            response.status(result.statusCode());
+            return result.getResponse();
 
-            response.status(200);
-            response.type("text/html");
-            return "";
         })));
     }
 

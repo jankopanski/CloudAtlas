@@ -24,6 +24,7 @@ public class Fetcher {
     private static final String ATTRIBUTES_SECTION = "attributes";
     private static int collectionInterval = 1000;
     private static int averagingPeriod = 5000;
+    private static String averagingMethod = "none";
 
     public static void main(String[] args) throws IOException {
         if (args.length != 1) {
@@ -34,7 +35,7 @@ public class Fetcher {
             System.setSecurityManager(new SecurityManager());
         }
         SystemInformationCollector collector = new SystemInformationCollector(readConfig(args[0]));
-        AverageCounter averageCounter = new AverageCounter(collectionInterval, averagingPeriod);
+        AverageCounter averageCounter = new AverageCounter(averagingMethod, collectionInterval, averagingPeriod);
         Registry registry = null;
         Agent agent = null;
         while (true) {
@@ -64,6 +65,7 @@ public class Fetcher {
         Ini ini = new Ini(new File(filename));
         collectionInterval = Integer.parseInt(ini.get(GENERAL_SECTION, "interval"));
         averagingPeriod = Integer.parseInt(ini.get(GENERAL_SECTION, "period"));
+        averagingMethod = ini.get(GENERAL_SECTION, "method");
         Map<String, String> attrMap = ini.get(ATTRIBUTES_SECTION);
         Collection<Attribute> attributes= new LinkedList<>();
         attrMap.forEach((String key, String value) -> {

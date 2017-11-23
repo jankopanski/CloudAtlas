@@ -46,11 +46,6 @@
             <artifactId>oshi-core</artifactId>
             <version>3.4.4</version>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.slf4j</groupId>-->
-            <!--<artifactId>slf4j-nop</artifactId>-->
-            <!--<version>1.7.25</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.sparkjava</groupId>
             <artifactId>spark-core</artifactId>
@@ -91,12 +86,6 @@
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
             <version>3.3.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.google.code.gson</groupId>
-            <artifactId>gson</artifactId>
-            <version>2.3.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>

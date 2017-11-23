@@ -23,11 +23,7 @@ public class Main {
             System.exit(1);
         }
 
-
-
         agent = new AgentComputer(zone);
-        Thread server = new Thread(new AgentServer(agent));
-        Thread fetcher = new Thread(new SystemInformationUpdater(agent));
 
         Runnable r = new Runnable() {
             @Override
@@ -58,11 +54,9 @@ public class Main {
 
         new Thread(r).start();
 
-        server.start();
-//        fetcher.start();
-        fetcher.run();
-//        fetcher.interrupt();
-        server.interrupt();
+//        Thread server = new Thread(new AgentServer(agent));
+        AgentServer server = new AgentServer(agent);
+        server.run();
     }
 
 

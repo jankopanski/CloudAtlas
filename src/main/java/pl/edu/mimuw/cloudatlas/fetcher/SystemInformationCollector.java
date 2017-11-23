@@ -7,21 +7,19 @@ import pl.edu.mimuw.cloudatlas.model.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.rmi.RemoteException;
 import java.util.*;
 
-public class FetcherComputer implements Fetcher {
+public class SystemInformationCollector {
     public static final int DNS_MAX = 3;
     private Collection<Attribute> attributes;
     private SystemInfo systemInfo;
 
-    public FetcherComputer(Collection<Attribute> attributes) {
+    public SystemInformationCollector(Collection<Attribute> attributes) {
         this.attributes = attributes;
         systemInfo = new SystemInfo();
     }
 
-    @Override
-    public AttributesMap fetch() throws RemoteException {
+    public AttributesMap collect() {
         AttributesMap map = new AttributesMap();
         for (Attribute attribute: attributes) {
             map.add(attribute, getInfo(attribute));

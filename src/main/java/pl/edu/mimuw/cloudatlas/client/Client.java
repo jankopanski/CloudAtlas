@@ -149,7 +149,6 @@ public class Client {
 
 
         Spark.staticFileLocation("/public");
-        // insert a post (using HTTP post method)
 
         post("/connect", ((request, response) -> {
             String aname = request.body();
@@ -157,7 +156,6 @@ public class Client {
                 response.status(200);
             else {
                 response.status(404);
-                System.out.println(agent.getManagedZones());
             }
             response.type("text/html");
             return "";
@@ -166,9 +164,6 @@ public class Client {
         post("/request", "application/json", (((request, response) -> {
             String json = request.body();
             ClientRequest req = g.fromJson(json, ClientRequest.class);
-            //System.out.println(req.getQuery());
-            //TODO tutaj użyć request do rmi z agentem
-            //agent.installQuery(req.getQuery());
             RequestResult result = handleRequest(req);
             response.type("application/json");
             response.status(result.statusCode());

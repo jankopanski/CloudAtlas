@@ -24,17 +24,18 @@ public class AgentComputer implements Agent {
             root = root.getFather();
     }
 
-    @Override
-    public synchronized Set<PathName> getManagedZones() {
+    private Set<PathName> getManagedZonesHelper(ZMI zmi) {
         Set<PathName> managedZones = new HashSet<>();
-        ZMI zmi = zone;
-        while (zmi.getFather() != null) {
-            for (ZMI son : zmi.getSons())
-                managedZones.add(getPathName(son));
-            zmi = zmi.getFather();
+        for (ZMI son : zmi.getSons()) {
+            managedZones.addAll(getManagedZonesHelper(son));
         }
         managedZones.add(getPathName(zmi));
         return managedZones;
+    }
+
+    @Override
+    public synchronized Set<PathName> getManagedZones() {
+       return getManagedZonesHelper(root);
     }
 
     @Override
@@ -44,35 +45,33 @@ public class AgentComputer implements Agent {
         return zmi.getAttributes();
     }
 
-    private static boolean executeQueries(ZMI zmi, String qName, String query) {
+    public List<QueryResult> executeQueries(ZMI zmi, String query) {
         if(!zmi.getSons().isEmpty()) {
 
             for(ZMI son : zmi.getSons())
-                executeQueries(son, qName, query);
+                executeQueries(son, query);
             Interpreter interpreter = new Interpreter(zmi);
             Yylex lex = new Yylex(new ByteArrayInputStream(query.getBytes()));
             try {
                 List<QueryResult> result = interpreter.interpretProgram((new parser(lex)).pProgram());
-                Attribute certName = new Attribute(qName);
-                ValueCert cert = new ValueCert(certName, query, new ArrayList<>());
-                for(QueryResult r : result) {
+                if (result.isEmpty())
+                    return null;
+                for (QueryResult r : result) {
                     zmi.getAttributes().addOrChange(r.getName(), r.getValue());
-                    cert.getAttributes().add(r.getName());
                 }
-                cert.getAttributes().add(certName);
-                zmi.getAttributes().addOrChange(certName, cert);
+                System.out.println(query);
+                return result;
+
             } catch (Exception exception) {
-                return false;
+                return null;
             }
         }
-        return true;
+        else
+            return null;
     }
 
     @Override
     public synchronized boolean installQuery(PathName zone, String query) {
-        // TODO interpreter
-
-        System.out.println(query);
 
         ZMI zmi;
 
@@ -96,8 +95,17 @@ public class AgentComputer implements Agent {
         queries.add(splitted[splitted.length - 1].trim());
 
         for (int i = 0; i < names.size(); ++i) {
-            if (!executeQueries(zmi, names.get(i), queries.get(i)))
+            List<QueryResult> result = executeQueries(zmi, queries.get(i));
+            if (result == null)
                 return false;
+            Attribute certName = new Attribute(names.get(i));
+            ValueCert cert = new ValueCert(certName, queries.get(i), new ArrayList<>());
+
+            for (QueryResult r : result)
+                cert.getAttributes().add(r.getName());
+
+            cert.getAttributes().add(certName);
+            zmi.getAttributes().addOrChange(certName, cert);
         }
         return true;
     }
@@ -107,7 +115,7 @@ public class AgentComputer implements Agent {
             for (ZMI son : zmi.getSons()) {
                 removeCert(son, queryName);
             }
-            ValueCert cert = (ValueCert) zmi.getAttributes().getOrNull(queryName); //ugly, will think how to do it better
+            ValueCert cert = (ValueCert) zmi.getAttributes().getOrNull(queryName);
             if (cert != null) {
                 for (Attribute a : cert.getAttributes())
                     zmi.getAttributes().remove(a);
@@ -118,7 +126,9 @@ public class AgentComputer implements Agent {
 
     @Override
     public synchronized boolean uninstallQuery(PathName zone, String queryName) {
-        // TODO interpreter
+
+        if (!queryName.startsWith("&"))
+            return false;
 
         ZMI zmi = getZMI(zone);
 

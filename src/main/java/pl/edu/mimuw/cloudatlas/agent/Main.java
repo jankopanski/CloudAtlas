@@ -8,9 +8,11 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 public class Main {
     private static ZMI root, zone;
+    static AgentComputer agent;
 
     public static void main(String[] args) {
         try {
@@ -21,15 +23,48 @@ public class Main {
             System.exit(1);
         }
 
-        Agent agent = new AgentComputer(zone);
+
+
+        agent = new AgentComputer(zone);
         Thread server = new Thread(new AgentServer(agent));
         Thread fetcher = new Thread(new SystemInformationUpdater(agent));
+
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    updateQueries(root);
+                    System.out.println("UP");
+                    try {
+                        Thread.sleep(5000);
+                    }
+                    catch (InterruptedException e) {
+
+                    }
+                }
+            }
+            private void updateQueries(ZMI zmi) {
+                for (ZMI son : zmi.getSons())
+                    updateQueries(son);
+                for (Map.Entry<Attribute, Value> e : zmi.getAttributes()) {
+                    if (Attribute.isQuery(e.getKey())) {
+                        ValueCert cert = (ValueCert) e.getValue();
+                        agent.executeQueries(zmi, cert.getQuery());
+                    }
+                }
+            }
+
+        };
+
+        new Thread(r).start();
+
         server.start();
 //        fetcher.start();
         fetcher.run();
 //        fetcher.interrupt();
         server.interrupt();
     }
+
 
     private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
             throws UnknownHostException {

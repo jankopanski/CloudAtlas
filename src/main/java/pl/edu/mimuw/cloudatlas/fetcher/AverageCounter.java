@@ -28,28 +28,28 @@ public class AverageCounter {
             case "average":
                 return average();
             default:
-                return queue.peek();
+                return queue.peekLast();
         }
     }
 
     private AttributesMap average() {
-        AttributesMap map = queue.peek().clone();
+        AttributesMap map = queue.peekLast().clone();
         for (Map.Entry<Attribute, Value> entry : map) {
             Value val = entry.getValue();
             if (entry.getValue().getType() == TypePrimitive.DOUBLE) {
                 val = new ValueDouble(0.0);
                 for (AttributesMap info : queue) {
-                    val.addValue(info.get(entry.getKey()));
+                    val = val.addValue(info.get(entry.getKey()));
                 }
-                val.divide(new ValueDouble((double) size));
+                val = val.divide(new ValueDouble((double) size));
             }
             else if (entry.getValue().getType() == TypePrimitive.INTEGER) {
                 val = new ValueInt(0L);
                 for (AttributesMap info : queue) {
-                    val.addValue(info.get(entry.getKey()));
+                    val = val.addValue(info.get(entry.getKey()));
                 }
-                val.divide(new ValueInt((long) size));
-                val.convertTo(TypePrimitive.INTEGER);
+                val = val.divide(new ValueInt((long) size));
+                val = val.convertTo(TypePrimitive.INTEGER);
             }
             map.addOrChange(entry.getKey(), val);
         }

@@ -44,13 +44,11 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	@Override
 	public Type getType() {
-		// TODO
 		return TypePrimitive.DURATION;
 	}
 	
 	@Override
 	public Value getDefaultValue() {
-		// TODO
 		return new ValueDuration(0L);
 	}
 	
@@ -122,8 +120,7 @@ public class ValueDuration extends ValueSimple<Long> {
 	}
 	
 	private static long parseDuration(String value) {
-		// TODO
-        String regex = "^([+-]\\d) (\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})$";
+        String regex = "^([+-]\\d*) (\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(value);
         if (matcher.matches()) {
@@ -132,7 +129,7 @@ public class ValueDuration extends ValueSimple<Long> {
             Long minutes = Long.valueOf(matcher.group(3));
             Long seconds = Long.valueOf(matcher.group(4));
             Long milliseconds = Long.valueOf(matcher.group(5));
-            if (days >= 24 || minutes >= 60 || seconds >= 60 || milliseconds >= 1000)
+            if (hours >= 24 || minutes >= 60 || seconds >= 60 || milliseconds >= 1000)
                 throw new IllegalArgumentException("Duration string does not meet described rules.");
             Long duration = ((((days) * 24 + hours) * 60 + minutes) * 60 + seconds) * 1000 + milliseconds;
             if (matcher.group(0).equals("-"))
@@ -144,7 +141,6 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	@Override
 	public ValueBoolean isLowerThan(Value value) {
-		// TODO
 		sameTypesOrThrow(value, Operation.COMPARE);
 		if(isNull() || value.isNull())
 			return new ValueBoolean(null);
@@ -153,7 +149,6 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	@Override
 	public ValueDuration addValue(Value value) {
-		// TODO
 		sameTypesOrThrow(value, Operation.COMPARE);
         if(isNull() || value.isNull())
             return new ValueDuration((Long)null);
@@ -162,7 +157,6 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	@Override
 	public ValueDuration subtract(Value value) {
-		// TODO
         sameTypesOrThrow(value, Operation.SUBTRACT);
         if(isNull() || value.isNull())
             return new ValueDuration((Long)null);
@@ -171,7 +165,6 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	@Override
 	public ValueDuration multiply(Value value) {
-		// TODO
 		if (value.getType().isCompatible(TypePrimitive.INTEGER)) {
 		    if (isNull() || value.isNull())
 		        return new ValueDuration((Long)null);
@@ -182,7 +175,6 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	@Override
 	public Value divide(Value value) {
-		// TODO
         if (value.getType().isCompatible(TypePrimitive.INTEGER)) {
             if (value.isNull())
                 return new ValueDuration((Long)null);
@@ -197,7 +189,6 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	@Override
 	public ValueDuration modulo(Value value) {
-		// TODO
         if (value.getType().isCompatible(TypePrimitive.INTEGER)) {
             if (value.isNull())
                 return new ValueDuration((Long)null);
@@ -212,13 +203,11 @@ public class ValueDuration extends ValueSimple<Long> {
 	
 	@Override
 	public ValueDuration negate() {
-		// TODO
 		return new ValueDuration(isNull() ? null : -getValue());
 	}
 	
 	@Override
 	public Value convertTo(Type type) {
-		// TODO
 		switch (type.getPrimaryType()) {
             case DOUBLE:
                 return new ValueDouble(getValue() == null ? null : getValue().doubleValue());

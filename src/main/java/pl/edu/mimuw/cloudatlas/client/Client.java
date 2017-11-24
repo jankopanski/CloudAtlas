@@ -71,18 +71,15 @@ public class Client {
         for (String cont : conts) {
             String[] pair = cont.split(":");
             if (pair.length != 2) {
-                System.out.println("2");
                 return null;
             }
             String[] bytes = pair[1].trim().split("\\.");
             if (bytes.length != 4) {
-                System.out.println(bytes.length);
                 return null;
             }
             try {
                 result.add(createContact(pair[0].trim(), Byte.valueOf(bytes[0]), Byte.valueOf(bytes[1]), Byte.valueOf(bytes[2]), Byte.valueOf(bytes[3])));
             } catch (UnknownHostException e) {
-                System.out.println("ex");
                 return null;
             }
         }
@@ -101,6 +98,8 @@ public class Client {
                        result.setStatus(Status.NOT_FOUND);
                     }
                     else {
+                        if (ret.getType() == TypePrimitive.TIME || ret.getType() == TypePrimitive.BOOLEAN)
+                            ret = ret.convertTo(TypePrimitive.STRING);
                         result.setStatus(Status.OK);
                         result.setResponse(g.toJson(ret));
                     }

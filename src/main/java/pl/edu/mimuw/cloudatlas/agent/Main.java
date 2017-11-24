@@ -30,7 +30,6 @@ public class Main {
             public void run() {
                 while (true) {
                     updateQueries(root);
-                    System.out.println("UP");
                     try {
                         Thread.sleep(5000);
                     }
@@ -54,7 +53,6 @@ public class Main {
 
         new Thread(r).start();
 
-//        Thread server = new Thread(new AgentServer(agent));
         AgentServer server = new AgentServer(agent);
         server.run();
     }

@@ -3,7 +3,7 @@ package pl.edu.mimuw.cloudatlas.modules;
 import lombok.Data;
 
 enum msgType {
-    idk, MsgNotUnderstood
+    idk, MsgNotUnderstood, Timer
 }
 
 @Data

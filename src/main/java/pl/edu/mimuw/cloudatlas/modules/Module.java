@@ -5,16 +5,17 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Module {
-    static BlockingQueue<Message> msgQ = new LinkedBlockingQueue<>();
+    BlockingQueue<Message> msgQ = new LinkedBlockingQueue<>();
 
-    protected static Message getMessage() {
+
+    protected Message getMessage() {
         try {
             return msgQ.take();
         } catch (InterruptedException e) {return null;}
     }
 
 
-    protected static synchronized void sendMessage(Message msg) {
+    protected synchronized void sendMessage(Message msg) {
         msgQ.add(msg);
     }
 

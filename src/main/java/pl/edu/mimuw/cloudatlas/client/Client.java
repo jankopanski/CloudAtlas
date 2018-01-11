@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import pl.edu.mimuw.cloudatlas.agent.Agent;
 import pl.edu.mimuw.cloudatlas.model.*;
+import pl.edu.mimuw.cloudatlas.modules.Module;
 import spark.Spark;
 
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.util.*;
 import java.util.List;
 
 
-public class Client {
+public class Client extends Module {
 
     private static final int HTTP_BAD_REQUEST = 400;
     private static final String AGENT_HOST = "localhost";

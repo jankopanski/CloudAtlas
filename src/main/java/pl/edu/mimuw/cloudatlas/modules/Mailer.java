@@ -8,7 +8,14 @@ enum sendError {
 }
 //TODO chyba nie będzie potrzebne
 public class Mailer extends Module {
-    synchronized static sendError passMessage(Message m) {
+    private static final Mailer INSTANCE = new Mailer();
+
+    public static Mailer getInstance() {
+        return INSTANCE;
+    }
+
+
+    synchronized sendError passMessage(Message m) {
         sendMessage(m);
         return OK;
     }

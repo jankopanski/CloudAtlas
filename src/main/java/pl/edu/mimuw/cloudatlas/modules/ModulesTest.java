@@ -1,12 +1,15 @@
 package pl.edu.mimuw.cloudatlas.modules;
 
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.time.LocalTime;
 
 import static java.lang.Thread.sleep;
 
 public class ModulesTest {
     public static void main(String args[]) {
-        timerSimpleTest();
+        //timerSimpleTest();
+        commSimpleTest();
     }
 
 
@@ -26,5 +29,23 @@ public class ModulesTest {
             System.out.println("Hello time");
         }
         System.out.println("timer simple test done");
+    }
+
+    public static void commSimpleTest() {
+        CommunicationModule m1, m2;
+        m1 = new CommunicationModule();
+        m1.setNodeNameAndPorts("a", 1234, 5678);
+        m2 = new CommunicationModule();
+        m2.setNodeNameAndPorts("a", 5678, 1234);
+        CommunicationMessage msg = new CommunicationMessage();
+        msg.destination = m1;
+        msg.source = null;
+        msg.type = msgType.Comunication;
+        try {
+            msg.destIP = InetAddress.getByAddress(new byte[]{127, 0, 0, 1});
+            msg.data = "Hello world";
+            m1.sendMessage(msg);
+
+        } catch (Exception e) {}
     }
 }

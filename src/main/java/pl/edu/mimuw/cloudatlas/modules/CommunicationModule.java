@@ -3,6 +3,7 @@ package pl.edu.mimuw.cloudatlas.modules;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -10,8 +11,10 @@ import java.util.Deque;
 import java.util.HashMap;
 
 public class CommunicationModule extends Module {
-    //private static final CommunicationModule INSTANCE = new CommunicationModule();
+    private static final CommunicationModule INSTANCE = new CommunicationModule();
     private static String NodeName = null;
+    private final int udpMaxLen = 256;
+    private Module dstModule = null;
     int sPort;
     DatagramSocket rcvSocket;
     DatagramSocket sndSocket;
@@ -36,13 +39,13 @@ public class CommunicationModule extends Module {
         }).start();
     }
 
-    //static CommunicationModule getInstance() {
-    //    return INSTANCE;
-    //}
+    void setDstModule(Module dModule) {
+        dstModule = dModule;
+    }
 
-//    private static final int rcvPort = 1234;
-
-
+    static CommunicationModule getInstance() {
+        return INSTANCE;
+    }
 
     private class udpWaitingRoom {
         int msgCount;
@@ -54,31 +57,28 @@ public class CommunicationModule extends Module {
         }
     }
 
-
-
-    void completeMessage(udpWaitingRoom room) {
+    void completeMessage(udpWaitingRoom room, InetAddress addr) {
          StringBuilder sb = new StringBuilder();
 
         for (udpMessage msg : room.msges)
             sb.append(msg.data);
 
         CommunicationMessage completeMessage = new CommunicationMessage();
+        completeMessage.type = msgType.Communication;
         completeMessage.data = sb.toString();
-        //completeMessage.source = CommunicationModule.getInstance();
-        completeMessage.destination = null; //TODO destination and send message
-        System.out.println(completeMessage.data);
+        completeMessage.IP = addr;
+        completeMessage.source = this;
+        completeMessage.destination = dstModule;
+        dstModule.sendMessage(completeMessage);
     }
 
     void receiverFunction() {
-        byte[] rcvData = new byte[512];
-            DatagramPacket rcvPckt = new DatagramPacket(rcvData, rcvData.length);
-            //udpMessage msg;
             HashMap<String, HashMap<Integer, udpWaitingRoom>> fragments = new HashMap<>();
-
+            byte[] rcvData = new byte[512];
+            DatagramPacket rcvPckt = new DatagramPacket(rcvData, rcvData.length);
             while (true) {
                 try {
                     rcvSocket.receive(rcvPckt);
-                    System.out.println("got msg");
                     ByteArrayInputStream bstream = new ByteArrayInputStream(rcvPckt.getData());
                     ObjectInputStream os;
                     os = new ObjectInputStream(bstream);
@@ -103,7 +103,7 @@ public class CommunicationModule extends Module {
                             room.msges[msg.counter] = msg;
                             room.msgCount++;
                             if (room.msgCount == room.msges.length) {
-                                completeMessage(room);
+                                completeMessage(room, rcvPckt.getAddress());
                                 return null;
                             }
                             return room;
@@ -119,22 +119,22 @@ public class CommunicationModule extends Module {
     }
 
     void passMsg(CommunicationMessage msg) {
-        System.out.println("pass");
         udpMessage uMsg = new udpMessage();
         uMsg.nodeName = NodeName;
         uMsg.number = msgCounter++;
-        uMsg.parts = msg.data.length() / 256 + 1;
+        uMsg.parts = msg.data.length() / udpMaxLen + 1;
         uMsg.counter = 0;
 
-        for (int i = 0; i < msg.data.length(); i += 256) {
-            uMsg.data = msg.data.substring(i, (i + 255 < msg.data.length() ? i + 255 : msg.data.length()));
+        for (int i = 0; i < msg.data.length(); i += udpMaxLen) {
+            uMsg.data = msg.data.substring(i, (i + udpMaxLen <= msg.data.length() ? i + udpMaxLen : msg.data.length()));
             try {
                 ObjectOutputStream os = new ObjectOutputStream(stream);
                 os.writeObject(uMsg);
                 byte[] sndArr = stream.toByteArray();
-                DatagramPacket sndPkt = new DatagramPacket(sndArr, sndArr.length, msg.destIP, sPort);
+                DatagramPacket sndPkt = new DatagramPacket(sndArr, sndArr.length, msg.IP, sPort);
                 sndSocket.send(sndPkt);
-                System.out.println("msg sent");
+
+                stream.reset();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -146,7 +146,7 @@ public class CommunicationModule extends Module {
     @Override
     void handleMsg(Message msg) {
         switch (msg.type) {
-            case Comunication:
+            case Communication:
                 passMsg((CommunicationMessage) msg);
                 break;
             default:

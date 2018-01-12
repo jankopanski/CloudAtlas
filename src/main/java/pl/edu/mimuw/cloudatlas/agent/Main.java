@@ -23,7 +23,10 @@ public class Main {
             System.exit(1);
         }
 
-        agent = new AgentComputer(zone);
+//        agent = new AgentComputer(zone);
+        AgentComputer.initialize(zone);
+        agent = AgentComputer.getInstance();
+
 
         Runnable r = new Runnable() {
             @Override

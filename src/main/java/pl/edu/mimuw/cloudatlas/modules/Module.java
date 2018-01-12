@@ -15,7 +15,7 @@ public class Module {
     }
 
 
-    protected synchronized void sendMessage(Message msg) {
+    public synchronized void sendMessage(Message msg) {
         msgQ.add(msg);
     }
 
@@ -26,7 +26,7 @@ public class Module {
         }
     }
 
-    void handleMsg(Message msg) {
+    public void handleMsg(Message msg) {
         switch (msg.type) {
             default:
                 msg.source.sendMessage(new MNUMessage(msg));

@@ -16,10 +16,10 @@ public interface Agent extends Remote {
     public AttributesMap getValues(PathName zone) throws RemoteException;
 
     /** Installs a query on the agent. We assume that the query is installed in all zones of the agent. */
-    public boolean installQuery(PathName zone, String query) throws RemoteException;
+    public Boolean installQuery(PathName zone, String query) throws RemoteException;
 
     /** Uninstalls a query on the agent. Again, the query is uninstalled from all zones of the agent. */
-    public boolean uninstallQuery(PathName zone, String queryName) throws RemoteException;
+    public Boolean uninstallQuery(PathName zone, String queryName) throws RemoteException;
 
     /** Sets the values of attributes of a given zone. */
     public void setValues(PathName zone, AttributesMap attributes) throws RemoteException;

@@ -1,27 +1,85 @@
 package pl.edu.mimuw.cloudatlas.agent;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.w3c.dom.Attr;
 import pl.edu.mimuw.cloudatlas.interpreter.Interpreter;
-import pl.edu.mimuw.cloudatlas.interpreter.InterpreterException;
 import pl.edu.mimuw.cloudatlas.interpreter.QueryResult;
 import pl.edu.mimuw.cloudatlas.interpreter.query.Yylex;
 import pl.edu.mimuw.cloudatlas.interpreter.query.parser;
 import pl.edu.mimuw.cloudatlas.model.*;
+import pl.edu.mimuw.cloudatlas.modules.*;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
 
-public class AgentComputer implements Agent {
+public class AgentComputer extends Module implements Agent {
+    private static AgentComputer INSTANCE ;
+
+    public static AgentComputer getInstance() {
+        return INSTANCE;
+    }
+
     private ZMI root, zone;
     private Set<ValueContact> contacts;
 
-    public AgentComputer(ZMI zone) {
-        this.zone = zone;
+    private AgentComputer() {
         contacts = new HashSet<>();
+    }
+
+    public static void initialize(ZMI zone) {
+        INSTANCE = new AgentComputer(zone);
+    }
+
+    private AgentComputer(ZMI zone) {
+        this.zone = zone;
         root = zone;
         while (root.getFather() != null)
             root = root.getFather();
+    }
+
+    @Override
+    public void handleMsg(Message msg) {
+        switch (msg.type) {
+            case RMICall:
+                runMethod((RMIMessage) msg);
+                break;
+            default: super.handleMsg(msg);
+        }
+    }
+
+    private void runMethod(RMIMessage msg) {
+        Object res = null;
+        switch (msg.method) {
+            case getManagedZones:
+                res = getManagedZones();
+                break;
+            case getValues:
+                res = getValues(((PathName) msg.params.get(0)));
+                break;
+            case installQuery:
+                res = installQuery((PathName) msg.params.get(0), (String) msg.params.get(1));
+                break;
+            case uninstallQuery:
+                res = uninstallQuery((PathName) msg.params.get(0), (String) msg.params.get(1));
+                break;
+            case setValues:
+                setValues((PathName) msg.params.get(0), (AttributesMap) msg.params.get(1));
+                break;
+            case setValuesDefaultZone:
+                setValues((AttributesMap) msg.params.get(1));
+                break;
+            case setContacts:
+                setContacts((Set<ValueContact>) msg.params.get(0));
+                break;
+        }
+        if (msg.ret) {
+            RMIModule rmi = RMIModule.getInstance();
+            RMIReturnMessage retmsg = new RMIReturnMessage();
+            retmsg.destination = msg.source;
+            retmsg.source = msg.destination;
+            retmsg.msgType = msgType.RMICall;
+            retmsg.method = msg.method;
+            retmsg.returnValue = res;
+            rmi.sendMessage(retmsg);
+        }
     }
 
     private Set<PathName> getManagedZonesHelper(ZMI zmi) {
@@ -34,12 +92,12 @@ public class AgentComputer implements Agent {
     }
 
     @Override
-    public synchronized Set<PathName> getManagedZones() {
+    public Set<PathName> getManagedZones() {
        return getManagedZonesHelper(root);
     }
 
     @Override
-    public synchronized AttributesMap getValues(PathName zone) {
+    public AttributesMap getValues(PathName zone) {
         ZMI zmi = getZMI(zone);
         if (zmi == null) return new AttributesMap();
         return zmi.getAttributes();
@@ -71,7 +129,7 @@ public class AgentComputer implements Agent {
     }
 
     @Override
-    public synchronized boolean installQuery(PathName zone, String query) {
+    public Boolean installQuery(PathName zone, String query) {
 
         ZMI zmi;
 
@@ -125,7 +183,7 @@ public class AgentComputer implements Agent {
     }
 
     @Override
-    public synchronized boolean uninstallQuery(PathName zone, String queryName) {
+    public Boolean uninstallQuery(PathName zone, String queryName) {
 
         if (!queryName.startsWith("&"))
             return false;
@@ -142,7 +200,7 @@ public class AgentComputer implements Agent {
     }
 
     @Override
-    public synchronized void setValues(PathName zone, AttributesMap attributes) {
+    public void setValues(PathName zone, AttributesMap attributes) {
         ZMI zmi = getZMI(zone);
         if (zmi == null || !zmi.getSons().isEmpty()) return;
         zmi.getAttributes().addOrChange(attributes);
@@ -156,12 +214,12 @@ public class AgentComputer implements Agent {
     }
 
     @Override
-    public synchronized void setValues(AttributesMap attributes) {
+    public void setValues(AttributesMap attributes) {
         setValues(getPathName(zone), attributes);
     }
 
     @Override
-    public synchronized void setContacts(Set<ValueContact> contacts) {
+    public void setContacts(Set<ValueContact> contacts) {
         this.contacts = contacts;
         System.out.println(contacts);
     }

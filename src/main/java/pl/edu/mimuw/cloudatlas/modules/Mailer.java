@@ -21,7 +21,7 @@ public class Mailer extends Module {
     }
 
     @Override
-    void handleMsg(Message msg) {
+    public void handleMsg(Message msg) {
         msg.destination.sendMessage(msg);
     }
 

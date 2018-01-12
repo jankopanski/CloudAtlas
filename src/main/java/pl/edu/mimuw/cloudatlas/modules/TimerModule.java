@@ -46,7 +46,7 @@ public class TimerModule extends Module {
     }
 
     @Override
-    synchronized void handleMsg(Message msg) {
+    public synchronized void handleMsg(Message msg) {
         switch (msg.type) {
             case Timer:
                 sleeperQ.add((TimerMessage) msg);

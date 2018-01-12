@@ -3,13 +3,13 @@ package pl.edu.mimuw.cloudatlas.modules;
 import lombok.Data;
 
 enum msgType {
-    idk, MsgNotUnderstood, Timer
+    idk, MsgNotUnderstood, Timer, RMICall
 }
 
 @Data
 public class Message {
-    Module source;
-    Module destination;
-    msgType type;
+    public Module source;
+    public Module destination;
+    public msgType type;
     MessageContent content;
 }

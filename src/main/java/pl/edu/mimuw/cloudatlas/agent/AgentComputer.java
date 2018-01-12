@@ -11,41 +11,38 @@ import java.io.ByteArrayInputStream;
 import java.util.*;
 
 public class AgentComputer extends Module implements Agent {
-    private static AgentComputer INSTANCE ;
+    private static AgentComputer INSTANCE = new AgentComputer();
 
     public static AgentComputer getInstance() {
         return INSTANCE;
     }
 
     private ZMI root, zone;
-    private Set<ValueContact> contacts;
+    private Set<ValueContact> contacts = new HashSet<>();
 
     private AgentComputer() {
-        contacts = new HashSet<>();
+        new Thread(() -> this.runModule()).start();
     }
 
     public static void initialize(ZMI zone) {
-        INSTANCE = new AgentComputer(zone);
-    }
-
-    private AgentComputer(ZMI zone) {
-        this.zone = zone;
-        root = zone;
-        while (root.getFather() != null)
-            root = root.getFather();
+        INSTANCE.zone = zone;
+        INSTANCE.root = zone;
+        while (INSTANCE.root.getFather() != null)
+            INSTANCE.root = INSTANCE.root.getFather();
     }
 
     @Override
     public void handleMsg(Message msg) {
         switch (msg.type) {
             case RMICall:
-                runMethod((RMIMessage) msg);
+                execMethod((RMIMessage) msg);
                 break;
             default: super.handleMsg(msg);
         }
     }
 
-    private void runMethod(RMIMessage msg) {
+    private void execMethod(RMIMessage msg) {
+        System.err.println("AgentComputer execMethod");
         Object res = null;
         switch (msg.method) {
             case getManagedZones:
@@ -75,11 +72,12 @@ public class AgentComputer extends Module implements Agent {
             RMIReturnMessage retmsg = new RMIReturnMessage();
             retmsg.destination = msg.source;
             retmsg.source = msg.destination;
-            retmsg.msgType = msgType.RMICall;
+//            retmsg.type = msgType.RMICall;
             retmsg.method = msg.method;
             retmsg.returnValue = res;
             rmi.sendMessage(retmsg);
         }
+        System.err.println("AgentComputer execMethod exit");
     }
 
     private Set<PathName> getManagedZonesHelper(ZMI zmi) {

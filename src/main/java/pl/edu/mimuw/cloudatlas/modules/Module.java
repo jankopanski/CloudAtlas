@@ -11,7 +11,10 @@ public class Module {
     protected Message getMessage() {
         try {
             return msgQ.take();
-        } catch (InterruptedException e) {return null;}
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 

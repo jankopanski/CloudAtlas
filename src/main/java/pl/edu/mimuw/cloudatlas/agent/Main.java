@@ -1,6 +1,7 @@
 package pl.edu.mimuw.cloudatlas.agent;
 
 import pl.edu.mimuw.cloudatlas.model.*;
+import pl.edu.mimuw.cloudatlas.modules.RMIModule;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 public class Main {
     private static ZMI root, zone;
-    static AgentComputer agent;
+    private static RMIModule agent;
 
     public static void main(String[] args) {
         try {
@@ -25,36 +26,36 @@ public class Main {
 
 //        agent = new AgentComputer(zone);
         AgentComputer.initialize(zone);
-        agent = AgentComputer.getInstance();
+        agent = RMIModule.getInstance();
 
 
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    updateQueries(root);
-                    try {
-                        Thread.sleep(5000);
-                    }
-                    catch (InterruptedException e) {
-
-                    }
-                }
-            }
-            private void updateQueries(ZMI zmi) {
-                for (ZMI son : zmi.getSons())
-                    updateQueries(son);
-                for (Map.Entry<Attribute, Value> e : zmi.getAttributes()) {
-                    if (Attribute.isQuery(e.getKey())) {
-                        ValueCert cert = (ValueCert) e.getValue();
-                        agent.executeQueries(zmi, cert.getQuery());
-                    }
-                }
-            }
-
-        };
-
-        new Thread(r).start();
+//        Runnable r = new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true) {
+//                    updateQueries(root);
+//                    try {
+//                        Thread.sleep(5000);
+//                    }
+//                    catch (InterruptedException e) {
+//
+//                    }
+//                }
+//            }
+//            private void updateQueries(ZMI zmi) {
+//                for (ZMI son : zmi.getSons())
+//                    updateQueries(son);
+//                for (Map.Entry<Attribute, Value> e : zmi.getAttributes()) {
+//                    if (Attribute.isQuery(e.getKey())) {
+//                        ValueCert cert = (ValueCert) e.getValue();
+//                        agent.executeQueries(zmi, cert.getQuery());
+//                    }
+//                }
+//            }
+//
+//        };
+//
+//        new Thread(r).start();
 
         AgentServer server = new AgentServer(agent);
         server.run();

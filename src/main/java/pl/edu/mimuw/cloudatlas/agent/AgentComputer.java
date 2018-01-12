@@ -21,6 +21,7 @@ public class AgentComputer extends Module implements Agent {
     private Set<ValueContact> contacts = new HashSet<>();
 
     private AgentComputer() {
+        System.err.println("AgentComputer constructor");
         new Thread(() -> this.runModule()).start();
     }
 
@@ -61,7 +62,7 @@ public class AgentComputer extends Module implements Agent {
                 setValues((PathName) msg.params.get(0), (AttributesMap) msg.params.get(1));
                 break;
             case setValuesDefaultZone:
-                setValues((AttributesMap) msg.params.get(1));
+                setValues((AttributesMap) msg.params.get(0));
                 break;
             case setContacts:
                 setContacts((Set<ValueContact>) msg.params.get(0));
@@ -72,7 +73,6 @@ public class AgentComputer extends Module implements Agent {
             RMIReturnMessage retmsg = new RMIReturnMessage();
             retmsg.destination = msg.source;
             retmsg.source = msg.destination;
-//            retmsg.type = msgType.RMICall;
             retmsg.method = msg.method;
             retmsg.returnValue = res;
             rmi.sendMessage(retmsg);

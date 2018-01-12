@@ -7,8 +7,4 @@ public class Message {
     public Module source;
     public Module destination;
     public msgType type;
-
-    public msgType getType() {
-        return type;
-    }
 }

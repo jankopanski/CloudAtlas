@@ -23,7 +23,7 @@ public class RMIModule extends Module implements Agent, Runnable {
         for (AgentMethod m : AgentMethod.values()) {
             locks.put(m, new ReturnValue());
         }
-        new Thread(INSTANCE).start();
+        new Thread(() -> this.runModule()).start();
     }
 
     public static RMIModule getInstance() {
@@ -49,7 +49,7 @@ public class RMIModule extends Module implements Agent, Runnable {
                 }
             }
         }
-        System.err.println("RMI  getManagedZones exit");
+        System.err.println("RMI getManagedZones exit");
         return (Set<PathName>) val.value;
     }
 
@@ -73,7 +73,7 @@ public class RMIModule extends Module implements Agent, Runnable {
                 }
             }
         }
-        System.err.println("RMI  getValues exit");
+        System.err.println("RMI getValues exit");
         return (AttributesMap) val.value;
     }
 
@@ -100,7 +100,7 @@ public class RMIModule extends Module implements Agent, Runnable {
                 }
             }
         }
-        System.err.println("RMI  installQuery exit");
+        System.err.println("RMI installQuery exit");
         return (Boolean) val.value;
     }
 
@@ -125,7 +125,7 @@ public class RMIModule extends Module implements Agent, Runnable {
                 }
             }
         }
-        System.err.println("RMI  uninstallQuery exit");
+        System.err.println("RMI uninstallQuery exit");
         return (Boolean) val.value;
     }
 
@@ -163,13 +163,15 @@ public class RMIModule extends Module implements Agent, Runnable {
     @Override
     public void handleMsg(Message msg) {
         System.err.println("RMI handleMsg");
-        switch (msg.getType()) {
+        switch (msg.type) {
             case RMICallback:
                 RMIReturnMessage rmimsg = (RMIReturnMessage) msg;
                 ReturnValue lock = locks.get(rmimsg.method);
-                lock.value = rmimsg.returnValue;
-                lock.wasCallback = true;
-                lock.notify();
+                synchronized (lock) {
+                    lock.value = rmimsg.returnValue;
+                    lock.wasCallback = true;
+                    lock.notify();
+                }
                 break;
             default: super.handleMsg(msg);
         }
@@ -178,6 +180,7 @@ public class RMIModule extends Module implements Agent, Runnable {
 
     @Override
     public void run() {
+        System.err.println("RMI run");
         runModule();
     }
 

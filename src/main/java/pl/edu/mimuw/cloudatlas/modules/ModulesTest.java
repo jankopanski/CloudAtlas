@@ -33,7 +33,7 @@ public class ModulesTest {
 
     private static class CommTestMdl extends Module {
        @Override
-       void handleMsg(Message msg) {
+       public void handleMsg(Message msg) {
            if (msg.type == msgType.Communication) {
                CommunicationMessage cMsg = (CommunicationMessage) msg;
                System.out.println(cMsg.data);

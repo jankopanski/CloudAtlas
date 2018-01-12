@@ -144,7 +144,7 @@ public class CommunicationModule extends Module {
     }
 
     @Override
-    void handleMsg(Message msg) {
+    public void handleMsg(Message msg) {
         switch (msg.type) {
             case Communication:
                 passMsg((CommunicationMessage) msg);

@@ -16,6 +16,10 @@ public class Main {
     private static RMIModule agent;
 
     public static void main(String[] args) {
+        if (args.length != 2) {
+            System.err.println("Usage: ./agent.sh <registry host> <registry port>");
+        }
+
         try {
             createTestHierarchy();
         } catch (ParseException | UnknownHostException e) {
@@ -57,7 +61,7 @@ public class Main {
 //
 //        new Thread(r).start();
 
-        AgentServer server = new AgentServer(agent);
+        AgentServer server = new AgentServer(agent, args[0], Integer.parseInt(args[1]));
         server.run();
     }
 

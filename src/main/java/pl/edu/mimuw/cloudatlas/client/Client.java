@@ -30,7 +30,8 @@ import java.util.List;
 public class Client extends Module {
 
     private static final int HTTP_BAD_REQUEST = 400;
-    private static final String AGENT_HOST = "localhost";
+    private static String host;
+    private static int port;
     private static Agent agent;
     private static Gson g = new Gson();
 
@@ -139,7 +140,15 @@ public class Client extends Module {
         }
     }
 
-    public static void main( String[] args) {
+    public static void main(String[] args) {
+        if (args.length != 2) {
+            System.err.println("Usage: ./client.sh <registry host> <registry port>");
+        }
+        else {
+            host = args[0];
+            port = Integer.parseInt(args[1]);
+        }
+
         try {
             agent = initializeAgent();
         } catch (RemoteException | NotBoundException e) {
@@ -175,8 +184,8 @@ public class Client extends Module {
     private static Agent initializeAgent() throws RemoteException, NotBoundException {
         if (System.getSecurityManager() == null)
             System.setSecurityManager(new SecurityManager());
-        Registry registry = LocateRegistry.getRegistry(AGENT_HOST);
-        return (Agent) registry.lookup("Agent");
+        Registry registry = LocateRegistry.getRegistry(host, port);
+        return (Agent) registry.lookup(Agent.NAME);
     }
 }
 

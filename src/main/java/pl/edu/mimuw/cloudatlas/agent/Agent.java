@@ -9,6 +9,8 @@ import java.rmi.RemoteException;
 import java.util.Set;
 
 public interface Agent extends Remote {
+    public static final String NAME = "Agent";
+
     /** Returns the set of zones on which the agent stores information. */
     public Set<PathName> getManagedZones() throws RemoteException;
 

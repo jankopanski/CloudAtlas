@@ -22,14 +22,18 @@ public class Fetcher {
     private static final String AGENT_HOST = "localhost";
     private static final String GENERAL_SECTION = "general";
     private static final String ATTRIBUTES_SECTION = "attributes";
+    private static int agent_port;
     private static int collectionInterval = 1000;
     private static int averagingPeriod = 5000;
     private static String averagingMethod = "none";
 
     public static void main(String[] args) throws IOException {
-        if (args.length != 1) {
-            System.err.println("Usage: java FetcherServer <config_file>");
+        if (args.length != 2) {
+            System.err.println("Usage: ./fetcher.sh <registry_port> ");
             System.exit(1);
+        }
+        else {
+            agent_port = Integer.parseInt(args[1]);
         }
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new SecurityManager());
@@ -43,8 +47,8 @@ public class Fetcher {
             AttributesMap attributesMap = averageCounter.get();
             try {
                 if (registry == null || agent == null) {
-                    registry = LocateRegistry.getRegistry(AGENT_HOST);
-                    agent = (Agent) registry.lookup("Agent");
+                    registry = LocateRegistry.getRegistry(AGENT_HOST, agent_port);
+                    agent = (Agent) registry.lookup(Agent.NAME);
                 }
                 agent.setValues(attributesMap);
             } catch (RemoteException | NotBoundException e) {

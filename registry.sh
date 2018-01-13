@@ -1,3 +1,3 @@
 cd target/classes
-rmiregistry &
+rmiregistry $1 &
 

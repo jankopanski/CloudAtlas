@@ -248,6 +248,7 @@ public class AgentComputer extends Module implements Agent {
                         executeQueries(zmi, cert.getQuery());
                     }
                 }
+                zmi.getAttributes().addOrChange("timestamp", new ValueTime(System.currentTimeMillis()));
                 zmi = zmi.getFather();
             } while (zmi != null);
         else

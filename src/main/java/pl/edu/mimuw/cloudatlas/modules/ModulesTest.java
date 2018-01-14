@@ -27,8 +27,8 @@ public class ModulesTest {
 
     public static void main(String args[]) {
         //timerSimpleTest();
-        commSimpleTest();
-        //gossipTest();
+        //commSimpleTest();
+        gossipTest();
     }
 
 
@@ -105,22 +105,23 @@ public class ModulesTest {
     public static void commSimpleTest() {
         CommunicationModule m1, m2;
         CommTestMdl tMdl = new CommTestMdl();
-        m1 = new CommunicationModule();
+        m1 = CommunicationModule.getInstance();//new CommunicationModule();
         m1.setNodeNameAndPorts("a", 1234, 5678);
         m1.setDstModule(tMdl);
-        m2 = new CommunicationModule();
-        m2.setNodeNameAndPorts("a", 5678, 1234);
-        m2.setDstModule(tMdl);
+        //m2 = new CommunicationModule();
+        //m2.setNodeNameAndPorts("a", 5678, 1234);
+        //m2.setDstModule(tMdl);
         CommunicationMessage msg1 = new CommunicationMessage();
         CommunicationMessage msg2 = new CommunicationMessage();
         msg1.destination = m1;
         msg2.destination = m1;
-        msg1.source = null;
+        msg1.source = m1;
+        msg2.source = m1;
         msg1.type = msgType.Communication;
         msg2.type = msgType.Communication;
         try {
-            msg1.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)206});
-            msg2.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)206});
+            msg1.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)80});
+            msg2.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)80});
             msg1.data = "Hello world".getBytes();
             m1.sendMessage(msg1);
             String longMsg = "aaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbababababababababab";

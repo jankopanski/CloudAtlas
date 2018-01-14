@@ -107,7 +107,7 @@ public class GossipModule extends Module {
 
     private void doGossip() {
         ZMI zone = agentComputer.getZone();
-        int level = 1;//strategy.choseLevel();
+        int level = strategy.choseLevel();
         for (int i = 0; i <= level; ++i) {
             zone = zone.getFather();
         }
@@ -170,8 +170,8 @@ public class GossipModule extends Module {
                 os.writeObject(gp);
                 byte[] data = stream.toByteArray();
                 os.close();
-                //CommunicationMessage msg = new CommunicationMessage(this, addr, data);
-                //CommunicationModule.getInstance().sendMessage(msg);
+                CommunicationMessage msg = new CommunicationMessage(this, addr, data);
+                CommunicationModule.getInstance().sendMessage(msg);
             } catch (Exception e) {
                 e.printStackTrace();
         }

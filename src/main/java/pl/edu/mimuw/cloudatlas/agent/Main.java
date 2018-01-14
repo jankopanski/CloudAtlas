@@ -53,34 +53,6 @@ public class Main {
         RMIModule rmi = RMIModule.getInstance();
 
 
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    updateQueries(root);
-                    try {
-                        Thread.sleep(5000);
-                    }
-                    catch (InterruptedException e) {
-
-                    }
-                }
-            }
-            private void updateQueries(ZMI zmi) {
-                for (ZMI son : zmi.getSons())
-                    updateQueries(son);
-                for (Map.Entry<Attribute, Value> e : zmi.getAttributes()) {
-                    if (Attribute.isQuery(e.getKey())) {
-                        ValueCert cert = (ValueCert) e.getValue();
-                        agent.executeQueries(zmi, cert.getQuery());
-                    }
-                }
-            }
-
-        };
-
-        new Thread(r).start();
-
         AgentServer server = new AgentServer(rmi, args[1], Integer.parseInt(args[2]));
         server.run();
     }

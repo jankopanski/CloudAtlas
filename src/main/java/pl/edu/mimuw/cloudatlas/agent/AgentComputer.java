@@ -43,7 +43,7 @@ public class AgentComputer extends Module implements Agent {
             INSTANCE.root = INSTANCE.root.getFather();
         signatureChecker = new SignatureChecker(publicKey);
         GossipModule gm = GossipModule.getInstance();
-        gm.initialize(Duration.ofSeconds(1), Duration.ofSeconds(1), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
+        gm.initialize(Duration.ofSeconds(5), Duration.ofSeconds(5), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
         CommunicationModule cm = CommunicationModule.getInstance();
         cm.setDstModule(gm);
         cm.setNodeNameAndPorts("/uw/violet07", 1234, 1234);
@@ -228,6 +228,7 @@ public class AgentComputer extends Module implements Agent {
         ZMI zmi = getZMI(zone);
         if (zmi == null || !zmi.getSons().isEmpty()) return;
         zmi.getAttributes().addOrChange(attributes);
+        markTime(zmi);
         // TODO Should setValues add new attributes or only modify existing attributes
 //        AttributesMap zoneAttributes = zmi.getAttributes();
 //        for (Map.Entry<Attribute, Value> entry : attributes) {
@@ -258,11 +259,15 @@ public class AgentComputer extends Module implements Agent {
                         executeQueries(zmi, cert.getQuery());
                     }
                 }
-                zmi.getAttributes().addOrChange("timestamp", new ValueTime(System.currentTimeMillis()));
+                markTime(zmi);
                 zmi = zmi.getFather();
             } while (zmi != null);
         else
             System.out.println("zone not yet initialized");
+    }
+
+    private void markTime(ZMI zmi) {
+        zmi.getAttributes().addOrChange("timestamp", new ValueTime(System.currentTimeMillis()));
     }
 
     private static String getName(ZMI zmi) {

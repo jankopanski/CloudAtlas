@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 
+import static java.lang.Thread.sleep;
+
 public class CommunicationModule extends Module {
     private static final CommunicationModule INSTANCE = new CommunicationModule();
     private static String NodeName = null;
@@ -75,7 +77,7 @@ public class CommunicationModule extends Module {
 
     void receiverFunction() {
             HashMap<String, HashMap<Integer, udpWaitingRoom>> fragments = new HashMap<>();
-            byte[] rcvData = new byte[512];
+            byte[] rcvData = new byte[udpMaxLen * 2];
             DatagramPacket rcvPckt = new DatagramPacket(rcvData, rcvData.length);
             while (true) {
                 try {
@@ -137,7 +139,7 @@ public class CommunicationModule extends Module {
                 byte[] sndArr = stream.toByteArray();
                 DatagramPacket sndPkt = new DatagramPacket(sndArr, sndArr.length, msg.IP, sPort);
                 sndSocket.send(sndPkt);
-
+                sleep(5);
                 stream.reset();
             } catch (Exception e) {
                 e.printStackTrace();

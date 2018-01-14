@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -63,11 +64,18 @@ public class Client extends Module {
 
     }
 
+//    private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
+//            throws UnknownHostException {
+//        return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
+//                ip1, ip2, ip3, ip4
+//        }));
+//    }
+
     private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
             throws UnknownHostException {
-        return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
-                ip1, ip2, ip3, ip4
-        }));
+        return new ValueContact(new PathName(path),
+                new InetSocketAddress(InetAddress.getByAddress(new byte[] {ip1, ip2, ip3, ip4}),
+                        0));
     }
 
     private static Set<ValueContact> prepareContacts(String input) {

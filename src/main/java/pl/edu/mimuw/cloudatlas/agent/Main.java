@@ -5,6 +5,7 @@ import pl.edu.mimuw.cloudatlas.modules.RMIModule;
 import pl.edu.mimuw.cloudatlas.security.KeyReader;
 import pl.edu.mimuw.cloudatlas.security.KeyReaderException;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.PublicKey;
@@ -18,18 +19,26 @@ public class Main {
     private static ZMI root, zone;
 
     public static void main(String[] args) {
-        if (args.length != 3) {
-            System.err.println("Usage: Main <public_key> <registry host> <registry port>");
+        if (args.length != 4) {
+            System.err.println("Usage: Main <public_key> <config_file> <registry host> <registry port>");
             System.exit(1);
         }
 
         try {
-            createTestHierarchy();
-        } catch (ParseException | UnknownHostException e) {
-            System.err.println("createTestHierarchy error");
+            ZMICreator.createHierarchy(args[1]);
+            root = ZMICreator.getRoot();
+            zone = ZMICreator.getZone();
+        } catch (IOException | org.json.simple.parser.ParseException | InvalidConfigException | ParseException e) {
             e.printStackTrace();
-            System.exit(1);
         }
+
+//        try {
+//            createTestHierarchy();
+//        } catch (ParseException | UnknownHostException e) {
+//            System.err.println("createTestHierarchy error");
+//            e.printStackTrace();
+//            System.exit(1);
+//        }
 
         String publicKeyFile = args[0];
         PublicKey publicKey = null;
@@ -81,12 +90,12 @@ public class Main {
 
         new Thread(r).start();
 
-        AgentServer server = new AgentServer(rmi, args[1], Integer.parseInt(args[2]));
+        AgentServer server = new AgentServer(rmi, args[2], Integer.parseInt(args[3]));
         server.run();
     }
 
 
-    private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
+    /*private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
             throws UnknownHostException {
         return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
                 ip1, ip2, ip3, ip4
@@ -245,5 +254,5 @@ public class Main {
                 new ValueString("odbc")
         });
         whatever02.getAttributes().add("php_modules", new ValueList(list, TypePrimitive.STRING));
-    }
+    }*/
 }

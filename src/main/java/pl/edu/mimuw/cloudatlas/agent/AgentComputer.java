@@ -43,7 +43,7 @@ public class AgentComputer extends Module implements Agent {
             INSTANCE.root = INSTANCE.root.getFather();
         signatureChecker = new SignatureChecker(publicKey);
         GossipModule gm = GossipModule.getInstance();
-        gm.initialize(Duration.ofSeconds(10), Duration.ofSeconds(10), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
+        gm.initialize(Duration.ofSeconds(1), Duration.ofSeconds(1), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
         CommunicationModule cm = CommunicationModule.getInstance();
         cm.setDstModule(gm);
         cm.setNodeNameAndPorts("/uw/violet07", 1234, 1234);

@@ -106,8 +106,9 @@ public class GossipModule extends Module {
     }
 
     private void doGossip() {
+        System.out.println("Gossip");
         ZMI zone = agentComputer.getZone();
-        int level = strategy.choseLevel();
+        int level = 0;//strategy.choseLevel();
         for (int i = 0; i <= level; ++i) {
             zone = zone.getFather();
         }
@@ -142,7 +143,7 @@ public class GossipModule extends Module {
                 i++;
             }
 
-            gossipsInProgress.put(chosenCont.getName().getSingletonName(), zone);
+            gossipsInProgress.put(chosenCont.getName().getSingletonName(), chosenSibling);
 
             GossipPackage gp = new GossipPackage();
 
@@ -187,7 +188,7 @@ public class GossipModule extends Module {
                 q.poll();
         }
         zone = q.peek();
-        if (zone == AgentComputer.getInstance().getZone()) {
+        /*if (zone == AgentComputer.getInstance().getZone()) {
             zone = zone.getFather();
             ZMI z = null;
             for (ZMI zmi :zone.getSons()) {
@@ -209,7 +210,7 @@ public class GossipModule extends Module {
                 zone.getAttributes().add("timestamp", new ValueTime(0L));
                 zone.getAttributes().add("name", new ValueString(gp.nodeName));
             }
-        }
+        }*/
         //gossipsInProgress.put(gp.nodeName, zone);
         return zone;
     }
@@ -230,8 +231,10 @@ public class GossipModule extends Module {
                 break;
             case RETURN:
                 zone = gossipsInProgress.get(gp.nodeName);
-                if (zone == null)
+                if (zone == null) {
+                    System.out.println("no zone found" + gp.nodeName);
                     return;
+                }
                 gossipsInProgress.remove(gp.nodeName);
                 break;
             /*case FRESHNESS:
@@ -244,8 +247,10 @@ public class GossipModule extends Module {
                 break;*/
         }
 
-        if (zone == null)
+        if (zone == null) {
+            System.out.println("no zone found");
             return;
+        }
 
         for (int i = 0; i < gp.info.length; ++i) {
             AttributesMap fromGossip = gp.info[i];
@@ -260,12 +265,19 @@ public class GossipModule extends Module {
                 continue;
             }
 
+                String s1 = ((ValueString) fromGossip.getOrNull("name")).getValue();
+                String s2 = ((ValueString) zone.getAttributes().getOrNull("name")).getValue();
+                System.out.println("my " + s2 + " vs " + s1);
+                System.out.println(myTs);
+                System.out.println(theirTs);
             if (myTs.isLowerThan(theirTs).getValue()) {
                 zone.setAttributes(fromGossip);
+                System.out.println("ZMI adopted: " + ((ValueString) fromGossip.getOrNull("name")).getValue());
                 gp.info[i] = null;
             }
             else {
                 gp.info[i] = zone.getAttributes();
+
             }
 
             if (gp.type == GossipType.INITIAL) {
@@ -273,6 +285,7 @@ public class GossipModule extends Module {
                 gp.nodeName = myPathName.getSingletonName();
                 sendGossipPackage(gp, msg.IP);
             }
+            zone = zone.getFather();
         }
         System.out.println("Gossip successful");
     }

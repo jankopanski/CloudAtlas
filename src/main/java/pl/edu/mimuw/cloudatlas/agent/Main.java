@@ -18,8 +18,8 @@ public class Main {
     private static ZMI root, zone;
 
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.err.println("Usage: Main <registry host> <registry port>");
+        if (args.length != 3) {
+            System.err.println("Usage: Main <public_key> <registry host> <registry port>");
             System.exit(1);
         }
 
@@ -31,7 +31,7 @@ public class Main {
             System.exit(1);
         }
 
-        String publicKeyFile = "query_signer.public";
+        String publicKeyFile = args[0];
         PublicKey publicKey = null;
         try {
             publicKey = KeyReader.readPublicKey(publicKeyFile);
@@ -81,7 +81,7 @@ public class Main {
 
         new Thread(r).start();
 
-        AgentServer server = new AgentServer(rmi, args[0], Integer.parseInt(args[1]));
+        AgentServer server = new AgentServer(rmi, args[1], Integer.parseInt(args[2]));
         server.run();
     }
 

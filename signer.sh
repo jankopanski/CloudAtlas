@@ -18,4 +18,4 @@ else
 	fi
 fi
 
-java -cp $CLASSPATH -Djava.rmi.server.hostname=$RMIHOST -Djava.security.policy=common.policy pl.edu.mimuw.cloudatlas.agent.Main query_signer.public $RMIHOST $RMIPORT
+java -cp $CLASSPATH -Djava.rmi.server.hostname=$RMIHOST -Djava.security.policy=common.policy pl.edu.mimuw.cloudatlas.security.QuerySignerServer query_signer.private $RMIHOST $RMIPORT

@@ -58,12 +58,18 @@ public class CommunicationModule extends Module {
     }
 
     void completeMessage(udpWaitingRoom room, InetAddress addr) {
-         StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (udpMessage msg : room.msges) {
+            i += msg.data.length;
+        }
+        byte[] data = new byte[i];
 
-        for (udpMessage msg : room.msges)
-            sb.append(msg.data);
-
-        CommunicationMessage completeMessage = new CommunicationMessage(this, addr, sb.toString().getBytes());
+        i = 0;
+        for (udpMessage msg : room.msges) {
+            System.arraycopy(msg.data, 0, data, i, msg.data.length);
+            i += msg.data.length;
+        }
+        CommunicationMessage completeMessage = new CommunicationMessage(this, addr, data);
         dstModule.sendMessage(completeMessage);
     }
 
@@ -121,7 +127,10 @@ public class CommunicationModule extends Module {
         uMsg.counter = 0;
 
         for (int i = 0; i < msg.data.length; i += udpMaxLen) {
-            //uMsg.data = msg.data.substring(i, (i + udpMaxLen <= msg.data.length() ? i + udpMaxLen : msg.data.length()));
+            //uMsg.data = msg.data  .substring(i, (i + udpMaxLen <= msg.data.length() ? i + udpMaxLen : msg.data.length()));
+            int len = msg.data.length - i < udpMaxLen ? msg.data.length - i : udpMaxLen;
+            uMsg.data = new byte[len];
+            System.arraycopy(msg.data, i, uMsg.data, 0, len);
             try {
                 ObjectOutputStream os = new ObjectOutputStream(stream);
                 os.writeObject(uMsg);

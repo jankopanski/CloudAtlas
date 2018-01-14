@@ -1,8 +1,6 @@
 package pl.edu.mimuw.cloudatlas.security;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
@@ -20,9 +18,13 @@ public class SignatureChecker {
         verifyCipher.init(Cipher.DECRYPT_MODE, publicKey);
     }
 
-    public boolean check(String query, Signature signature) throws BadPaddingException, IllegalBlockSizeException {
+    public boolean check(String query, Signature signature) throws InvalidQueryException {
         byte[] queryBytes = digestGenerator.digest(query.getBytes());
-        byte[] decryptedBytes = verifyCipher.doFinal(signature.getBytes());
-        return Arrays.equals(queryBytes, decryptedBytes);
+        try {
+            byte[] decryptedBytes = verifyCipher.doFinal(signature.getBytes());
+            return Arrays.equals(queryBytes, decryptedBytes);
+        } catch (Exception e) {
+            throw new InvalidQueryException(e);
+        }
     }
 }

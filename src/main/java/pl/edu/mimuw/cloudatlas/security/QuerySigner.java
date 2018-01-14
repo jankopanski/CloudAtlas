@@ -1,8 +1,7 @@
 package pl.edu.mimuw.cloudatlas.security;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
 import java.rmi.Remote;
+import java.rmi.RemoteException;
 
 public interface QuerySigner extends Remote {
     public final static String NAME = "QuerySigner";
@@ -11,5 +10,5 @@ public interface QuerySigner extends Remote {
     public final static int NUM_KEY_BITS = 1024;
 
     // Given a query, returns signature encrypted with Query Signer private key
-    public Signature sign(String query) throws BadPaddingException, IllegalBlockSizeException, QueryConflictException;
+    public Signature sign(String query) throws RemoteException, QueryConflictException, InvalidQueryException;
 }

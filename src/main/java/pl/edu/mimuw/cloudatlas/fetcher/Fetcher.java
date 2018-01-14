@@ -29,7 +29,7 @@ public class Fetcher {
 
     public static void main(String[] args) throws IOException {
         if (args.length != 2) {
-            System.err.println("Usage: ./fetcher.sh <registry_port> ");
+            System.err.println("Usage: Fetcher <config_file> <registry_port> ");
             System.exit(1);
         }
         else {

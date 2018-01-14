@@ -2,9 +2,12 @@ package pl.edu.mimuw.cloudatlas.agent;
 
 import pl.edu.mimuw.cloudatlas.model.*;
 import pl.edu.mimuw.cloudatlas.modules.RMIModule;
+import pl.edu.mimuw.cloudatlas.security.KeyReader;
+import pl.edu.mimuw.cloudatlas.security.KeyReaderException;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.PublicKey;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -13,11 +16,11 @@ import java.util.Map;
 
 public class Main {
     private static ZMI root, zone;
-    private static RMIModule agent;
 
     public static void main(String[] args) {
         if (args.length != 2) {
-            System.err.println("Usage: ./agent.sh <registry host> <registry port>");
+            System.err.println("Usage: Main <registry host> <registry port>");
+            System.exit(1);
         }
 
         try {
@@ -28,40 +31,57 @@ public class Main {
             System.exit(1);
         }
 
-//        agent = new AgentComputer(zone);
-        AgentComputer.initialize(zone);
-        agent = RMIModule.getInstance();
+        String publicKeyFile = "query_signer.public";
+        PublicKey publicKey = null;
+        try {
+            publicKey = KeyReader.readPublicKey(publicKeyFile);
+        } catch (KeyReaderException e) {
+            System.err.println("Public key read error");
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        AgentComputer agent = AgentComputer.getInstance();
+        try {
+            AgentComputer.initialize(zone, publicKey);
+        }
+        catch (Exception e) {
+            System.err.println("Agent initialization error");
+            e.printStackTrace();
+            System.exit(1);
+        }
+        RMIModule rmi = RMIModule.getInstance();
 
 
-//        Runnable r = new Runnable() {
-//            @Override
-//            public void run() {
-//                while (true) {
-//                    updateQueries(root);
-//                    try {
-//                        Thread.sleep(5000);
-//                    }
-//                    catch (InterruptedException e) {
-//
-//                    }
-//                }
-//            }
-//            private void updateQueries(ZMI zmi) {
-//                for (ZMI son : zmi.getSons())
-//                    updateQueries(son);
-//                for (Map.Entry<Attribute, Value> e : zmi.getAttributes()) {
-//                    if (Attribute.isQuery(e.getKey())) {
-//                        ValueCert cert = (ValueCert) e.getValue();
-//                        agent.executeQueries(zmi, cert.getQuery());
-//                    }
-//                }
-//            }
-//
-//        };
-//
-//        new Thread(r).start();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    updateQueries(root);
+                    try {
+                        Thread.sleep(5000);
+                    }
+                    catch (InterruptedException e) {
 
-        AgentServer server = new AgentServer(agent, args[0], Integer.parseInt(args[1]));
+                    }
+                }
+            }
+            private void updateQueries(ZMI zmi) {
+                for (ZMI son : zmi.getSons())
+                    updateQueries(son);
+                for (Map.Entry<Attribute, Value> e : zmi.getAttributes()) {
+                    if (Attribute.isQuery(e.getKey())) {
+                        ValueCert cert = (ValueCert) e.getValue();
+                        agent.executeQueries(zmi, cert.getQuery());
+                    }
+                }
+            }
+
+        };
+
+        new Thread(r).start();
+
+        AgentServer server = new AgentServer(rmi, args[0], Integer.parseInt(args[1]));
         server.run();
     }
 

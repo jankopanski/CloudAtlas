@@ -6,12 +6,20 @@ import pl.edu.mimuw.cloudatlas.interpreter.query.Yylex;
 import pl.edu.mimuw.cloudatlas.interpreter.query.parser;
 import pl.edu.mimuw.cloudatlas.model.*;
 import pl.edu.mimuw.cloudatlas.modules.*;
+import pl.edu.mimuw.cloudatlas.security.InvalidQueryException;
+import pl.edu.mimuw.cloudatlas.security.Signature;
+import pl.edu.mimuw.cloudatlas.security.SignatureChecker;
 
+import javax.crypto.NoSuchPaddingException;
 import java.io.ByteArrayInputStream;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.*;
 
 public class AgentComputer extends Module implements Agent {
     private static AgentComputer INSTANCE = new AgentComputer();
+    private static SignatureChecker signatureChecker;
 
     public static AgentComputer getInstance() {
         return INSTANCE;
@@ -21,15 +29,15 @@ public class AgentComputer extends Module implements Agent {
     private Set<ValueContact> contacts = new HashSet<>();
 
     private AgentComputer() {
-        System.err.println("AgentComputer constructor");
         new Thread(() -> this.runModule()).start();
     }
 
-    public static void initialize(ZMI zone) {
+    public static void initialize(ZMI zone, PublicKey publicKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
         INSTANCE.zone = zone;
         INSTANCE.root = zone;
         while (INSTANCE.root.getFather() != null)
             INSTANCE.root = INSTANCE.root.getFather();
+        signatureChecker = new SignatureChecker(publicKey);
     }
 
     @Override
@@ -43,7 +51,6 @@ public class AgentComputer extends Module implements Agent {
     }
 
     private void execMethod(RMIMessage msg) {
-        System.err.println("AgentComputer execMethod");
         Object res = null;
         switch (msg.method) {
             case getManagedZones:
@@ -53,7 +60,7 @@ public class AgentComputer extends Module implements Agent {
                 res = getValues(((PathName) msg.params.get(0)));
                 break;
             case installQuery:
-                res = installQuery((PathName) msg.params.get(0), (String) msg.params.get(1));
+                res = installQuery((PathName) msg.params.get(0), (String) msg.params.get(1), (Signature) msg.params.get(2));
                 break;
             case uninstallQuery:
                 res = uninstallQuery((PathName) msg.params.get(0), (String) msg.params.get(1));
@@ -77,7 +84,7 @@ public class AgentComputer extends Module implements Agent {
             retmsg.returnValue = res;
             rmi.sendMessage(retmsg);
         }
-        System.err.println("AgentComputer execMethod exit");
+//        System.err.println("AgentComputer execMethod exit");
     }
 
     private Set<PathName> getManagedZonesHelper(ZMI zmi) {
@@ -90,18 +97,18 @@ public class AgentComputer extends Module implements Agent {
     }
 
     @Override
-    public Set<PathName> getManagedZones() {
+    public synchronized Set<PathName> getManagedZones() {
        return getManagedZonesHelper(root);
     }
 
     @Override
-    public AttributesMap getValues(PathName zone) {
+    public synchronized AttributesMap getValues(PathName zone) {
         ZMI zmi = getZMI(zone);
         if (zmi == null) return new AttributesMap();
         return zmi.getAttributes();
     }
 
-    public List<QueryResult> executeQueries(ZMI zmi, String query) {
+    public synchronized List<QueryResult> executeQueries(ZMI zmi, String query) {
         if(!zmi.getSons().isEmpty()) {
 
             for(ZMI son : zmi.getSons())
@@ -127,7 +134,14 @@ public class AgentComputer extends Module implements Agent {
     }
 
     @Override
-    public Boolean installQuery(PathName zone, String query) {
+    public synchronized Boolean installQuery(PathName zone, String query, Signature signature) {
+        try {
+            if (!signatureChecker.check(query, signature)) {
+                return false;
+            }
+        } catch (InvalidQueryException e) {
+            return false;
+        }
 
         ZMI zmi;
 
@@ -181,7 +195,7 @@ public class AgentComputer extends Module implements Agent {
     }
 
     @Override
-    public Boolean uninstallQuery(PathName zone, String queryName) {
+    public synchronized Boolean uninstallQuery(PathName zone, String queryName) {
 
         if (!queryName.startsWith("&"))
             return false;
@@ -198,7 +212,7 @@ public class AgentComputer extends Module implements Agent {
     }
 
     @Override
-    public void setValues(PathName zone, AttributesMap attributes) {
+    public synchronized void setValues(PathName zone, AttributesMap attributes) {
         ZMI zmi = getZMI(zone);
         if (zmi == null || !zmi.getSons().isEmpty()) return;
         zmi.getAttributes().addOrChange(attributes);
@@ -212,12 +226,12 @@ public class AgentComputer extends Module implements Agent {
     }
 
     @Override
-    public void setValues(AttributesMap attributes) {
+    public synchronized void setValues(AttributesMap attributes) {
         setValues(getPathName(zone), attributes);
     }
 
     @Override
-    public void setContacts(Set<ValueContact> contacts) {
+    public synchronized void setContacts(Set<ValueContact> contacts) {
         this.contacts = contacts;
         System.out.println(contacts);
     }

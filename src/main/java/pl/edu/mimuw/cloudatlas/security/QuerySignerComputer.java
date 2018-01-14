@@ -25,15 +25,19 @@ public class QuerySignerComputer implements QuerySigner {
     }
 
     @Override
-    public Signature sign(String query) throws BadPaddingException, IllegalBlockSizeException, QueryConflictException {
+    public Signature sign(String query) throws InvalidQueryException, QueryConflictException {
         String queryName = new Attribute(query.split(":", 2)[0].trim()).getName();
         if (queryName.charAt(0) != '&') throw new IllegalArgumentException("Query name should start with &");
         if (queries.containsKey(queryName)) {
             throw new QueryConflictException(queries.get(queryName));
         }
         byte[] queryBytes = digestGenerator.digest(query.getBytes());
-        byte[] encryptedBytes = signCipher.doFinal(queryBytes);
-        queries.put(queryName, query);
-        return new Signature(encryptedBytes);
+        try {
+            byte[] encryptedBytes = signCipher.doFinal(queryBytes);
+            queries.put(queryName, query);
+            return new Signature(encryptedBytes);
+        } catch (IllegalBlockSizeException | BadPaddingException e) {
+            throw new InvalidQueryException(e);
+        }
     }
 }

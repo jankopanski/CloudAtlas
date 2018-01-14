@@ -12,6 +12,9 @@ import lombok.Data;
 import pl.edu.mimuw.cloudatlas.agent.Agent;
 import pl.edu.mimuw.cloudatlas.model.*;
 import pl.edu.mimuw.cloudatlas.modules.Module;
+import pl.edu.mimuw.cloudatlas.security.InvalidQueryException;
+import pl.edu.mimuw.cloudatlas.security.QueryConflictException;
+import pl.edu.mimuw.cloudatlas.security.QuerySigner;
 import spark.Spark;
 
 import java.io.IOException;
@@ -23,6 +26,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import pl.edu.mimuw.cloudatlas.security.Signature;
 import java.util.*;
 import java.util.List;
 
@@ -30,9 +34,8 @@ import java.util.List;
 public class Client extends Module {
 
     private static final int HTTP_BAD_REQUEST = 400;
-    private static String host;
-    private static int port;
     private static Agent agent;
+    private static QuerySigner querySigner;
     private static Gson g = new Gson();
 
     private enum Status {OK, NOT_FOUND, INVALID, EXCEPTION};
@@ -117,7 +120,9 @@ public class Client extends Module {
                     result.setResponse(response.toString());
                     break;
                 case "installQ":
-                    if (agent.installQuery(new PathName(req.getAgent()), req.getQuery()))
+                    String query = req.getQuery();
+                    Signature signature = querySigner.sign(query);
+                    if (agent.installQuery(new PathName(req.getAgent()), query, signature))
                         result.setStatus(Status.OK);
                     break;
                 case "uninstallQ":
@@ -138,19 +143,32 @@ public class Client extends Module {
             result.setStatus(Status.EXCEPTION);
             return result;
         }
+        catch (QueryConflictException | InvalidQueryException e) {
+            result.setStatus(Status.INVALID);
+            return result;
+        }
     }
 
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.err.println("Usage: ./client.sh <registry host> <registry port>");
+        String agentHost = null, signerHost = null;
+        int agentPort = 0, signerPort = 0;
+        if (args.length != 4) {
+            System.err.println("Usage: ./client.sh <registry_host> <registry_port> <query_signer_host> <query_signer_port>");
+            System.exit(1);
         }
         else {
-            host = args[0];
-            port = Integer.parseInt(args[1]);
+            agentHost = args[0];
+            agentPort = Integer.parseInt(args[1]);
+            signerHost = args[2];
+            signerPort = Integer.parseInt(args[3]);
         }
 
+        if (System.getSecurityManager() == null)
+            System.setSecurityManager(new SecurityManager());
+
         try {
-            agent = initializeAgent();
+            querySigner = connectQuerySigner(signerHost, signerPort);
+            agent = connectAgent(agentHost, agentPort);
         } catch (RemoteException | NotBoundException e) {
             e.printStackTrace();
             System.exit(1);
@@ -181,9 +199,12 @@ public class Client extends Module {
         })));
     }
 
-    private static Agent initializeAgent() throws RemoteException, NotBoundException {
-        if (System.getSecurityManager() == null)
-            System.setSecurityManager(new SecurityManager());
+    private static QuerySigner connectQuerySigner(String host, int port) throws RemoteException, NotBoundException {
+        Registry registry = LocateRegistry.getRegistry(host, port);
+        return (QuerySigner) registry.lookup(QuerySigner.NAME);
+    }
+
+    private static Agent connectAgent(String host, int port) throws RemoteException, NotBoundException {
         Registry registry = LocateRegistry.getRegistry(host, port);
         return (Agent) registry.lookup(Agent.NAME);
     }

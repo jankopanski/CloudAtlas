@@ -1,26 +1,26 @@
 package pl.edu.mimuw.cloudatlas.agent;
 
-import pl.edu.mimuw.cloudatlas.model.*;
+import pl.edu.mimuw.cloudatlas.model.Attribute;
+import pl.edu.mimuw.cloudatlas.model.Value;
+import pl.edu.mimuw.cloudatlas.model.ValueCert;
+import pl.edu.mimuw.cloudatlas.model.ZMI;
 import pl.edu.mimuw.cloudatlas.modules.RMIModule;
 import pl.edu.mimuw.cloudatlas.security.KeyReader;
 import pl.edu.mimuw.cloudatlas.security.KeyReaderException;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.security.PublicKey;
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 
 public class Main {
     private static ZMI root, zone;
+    private static String host;
+    private static int port;
 
     public static void main(String[] args) {
-        if (args.length != 4) {
-            System.err.println("Usage: Main <public_key> <config_file> <registry host> <registry port>");
+        if (args.length != 2) {
+            System.err.println("Usage: Main <public_key> <config_file>");
             System.exit(1);
         }
 
@@ -28,17 +28,12 @@ public class Main {
             ZMICreator.createHierarchy(args[1]);
             root = ZMICreator.getRoot();
             zone = ZMICreator.getZone();
+            host = ZMICreator.getHost();
+            port = ZMICreator.getPort();
+
         } catch (IOException | org.json.simple.parser.ParseException | InvalidConfigException | ParseException e) {
             e.printStackTrace();
         }
-
-//        try {
-//            createTestHierarchy();
-//        } catch (ParseException | UnknownHostException e) {
-//            System.err.println("createTestHierarchy error");
-//            e.printStackTrace();
-//            System.exit(1);
-//        }
 
         String publicKeyFile = args[0];
         PublicKey publicKey = null;
@@ -90,7 +85,7 @@ public class Main {
 
         new Thread(r).start();
 
-        AgentServer server = new AgentServer(rmi, args[2], Integer.parseInt(args[3]));
+        AgentServer server = new AgentServer(rmi, host, port);
         server.run();
     }
 

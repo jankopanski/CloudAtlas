@@ -14,6 +14,8 @@ import java.util.*;
 
 public class ZMICreator {
     private static ZMI root, zmi;
+    private static String host;
+    private static int port;
 
     private static JSONObject readConfig(String file) throws IOException, ParseException {
         JSONParser parser = new JSONParser();
@@ -37,11 +39,15 @@ public class ZMICreator {
         for (Object entryObj : contactsObj) {
             JSONObject entry = (JSONObject) entryObj;
             PathName contactPath = new PathName((String) entry.get("path"));
-            String host = (String) entry.get("host");
-            InetAddress address = InetAddress.getByName(host);
-            int port = Math.toIntExact((Long) entry.get("port"));
-            InetSocketAddress socketAddress = new InetSocketAddress(address, port);
+            String contactHost = (String) entry.get("host");
+            InetAddress address = InetAddress.getByName(contactHost);
+            int contactPort = Math.toIntExact((Long) entry.get("port"));
+            InetSocketAddress socketAddress = new InetSocketAddress(address, contactPort);
             contacts.add(new ValueContact(contactPath, socketAddress));
+            if (contactPath.equals(path)) {
+                host = contactHost;
+                port = contactPort;
+            }
         }
 
         root = new ZMI();
@@ -100,5 +106,13 @@ public class ZMICreator {
 
     static ZMI getZone() {
         return zmi;
+    }
+
+    static String getHost() {
+        return host;
+    }
+
+    static int getPort() {
+        return port;
     }
 }

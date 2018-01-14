@@ -1,0 +1,17 @@
+{
+	"path": "/uw/violet07",
+    "expiry": "+13 12:00:00.000",
+	"has_ups": null,
+	"some_names": ["tola", "tosia"],
+	"contacts": [{
+			"path": "/uw/violet07",
+			"host": "localhost",
+			"port": 1099
+		},
+		{
+			"path": "/uw/khaki13",
+			"host": "localhost",
+			"port": 1100
+		}
+	]
+}

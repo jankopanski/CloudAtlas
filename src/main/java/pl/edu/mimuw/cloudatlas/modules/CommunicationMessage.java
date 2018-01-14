@@ -6,10 +6,10 @@ import java.net.InetAddress;
 
 @NoArgsConstructor
 public class CommunicationMessage extends Message {
-    InetAddress IP;
-    String data;
+    public InetAddress IP;
+    public byte[] data;
 
-    public CommunicationMessage(Module src, InetAddress addr, String dat) {
+    public CommunicationMessage(Module src, InetAddress addr, byte[] dat) {
         super(src, CommunicationModule.getInstance(), msgType.Communication);
         IP = addr;
         data = dat;

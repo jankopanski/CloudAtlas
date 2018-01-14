@@ -22,7 +22,9 @@ public class TimerModule extends Module {
                                 msg = sleeperQ.poll();
                                 msg.callback.run();
                             } else try {
-                                wait(now.until(msg.fireTime, ChronoUnit.MILLIS));
+                                long sleepTime = now.until(msg.fireTime, ChronoUnit.MILLIS);
+                                if (sleepTime != 0)
+                                    wait(sleepTime);
                             } catch (InterruptedException e) {
                             }
                         } else

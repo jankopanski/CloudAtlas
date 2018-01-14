@@ -21,7 +21,7 @@ public class CommunicationModule extends Module {
     int msgCounter = 0;
     ByteArrayOutputStream stream = new ByteArrayOutputStream();
 
-    void setNodeNameAndPorts(String name, int sndPort, int rcvPort) {
+    public void setNodeNameAndPorts(String name, int sndPort, int rcvPort) {
         NodeName = name;
         try {
             rcvSocket = new DatagramSocket(rcvPort);
@@ -39,11 +39,11 @@ public class CommunicationModule extends Module {
         }).start();
     }
 
-    void setDstModule(Module dModule) {
+    public void setDstModule(Module dModule) {
         dstModule = dModule;
     }
 
-    static CommunicationModule getInstance() {
+    public static CommunicationModule getInstance() {
         return INSTANCE;
     }
 
@@ -63,12 +63,7 @@ public class CommunicationModule extends Module {
         for (udpMessage msg : room.msges)
             sb.append(msg.data);
 
-        CommunicationMessage completeMessage = new CommunicationMessage();
-        completeMessage.type = msgType.Communication;
-        completeMessage.data = sb.toString();
-        completeMessage.IP = addr;
-        completeMessage.source = this;
-        completeMessage.destination = dstModule;
+        CommunicationMessage completeMessage = new CommunicationMessage(this, addr, sb.toString());
         dstModule.sendMessage(completeMessage);
     }
 

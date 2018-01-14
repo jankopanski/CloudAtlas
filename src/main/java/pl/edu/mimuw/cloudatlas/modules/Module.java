@@ -31,6 +31,8 @@ public class Module {
 
     public void handleMsg(Message msg) {
         switch (msg.type) {
+            case MsgNotUnderstood:
+                System.out.println("Someone did not understand my message");
             default:
                 msg.source.sendMessage(new MNUMessage(msg));
         }

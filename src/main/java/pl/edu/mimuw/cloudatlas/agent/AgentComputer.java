@@ -42,6 +42,10 @@ public class AgentComputer extends Module implements Agent {
         }
     }
 
+    public ZMI getZone() {
+        return zone;
+    }
+
     private void execMethod(RMIMessage msg) {
         System.err.println("AgentComputer execMethod");
         Object res = null;
@@ -102,35 +106,32 @@ public class AgentComputer extends Module implements Agent {
     }
 
     public List<QueryResult> executeQueries(ZMI zmi, String query) {
-        if(!zmi.getSons().isEmpty()) {
-
-            for(ZMI son : zmi.getSons())
-                executeQueries(son, query);
-            Interpreter interpreter = new Interpreter(zmi);
-            Yylex lex = new Yylex(new ByteArrayInputStream(query.getBytes()));
-            try {
-                List<QueryResult> result = interpreter.interpretProgram((new parser(lex)).pProgram());
-                if (result.isEmpty())
-                    return null;
-                for (QueryResult r : result) {
-                    zmi.getAttributes().addOrChange(r.getName(), r.getValue());
+        if (zmi == null)
+            return new ArrayList<>();
+        else {
+            List<QueryResult> ancestorsResults = executeQueries(zmi.getFather(), query);
+            if (!zmi.getSons().isEmpty()) {
+                Interpreter interpreter = new Interpreter(zmi);
+                Yylex lex = new Yylex(new ByteArrayInputStream(query.getBytes()));
+                try {
+                    List<QueryResult> result = interpreter.interpretProgram((new parser(lex)).pProgram());
+                    for (QueryResult r : result) {
+                        zmi.getAttributes().addOrChange(r.getName(), r.getValue());
+                    }
+                    System.out.println(query);
+                    ancestorsResults.addAll(result);
+                } catch (Exception exception) {
                 }
-                System.out.println(query);
-                return result;
-
-            } catch (Exception exception) {
-                return null;
             }
+            return ancestorsResults;
         }
-        else
-            return null;
     }
 
     @Override
     public Boolean installQuery(PathName zone, String query) {
 
         ZMI zmi;
-
+        System.out.println(query);
         if (zone == null)
             zmi = root;
         else
@@ -152,7 +153,7 @@ public class AgentComputer extends Module implements Agent {
 
         for (int i = 0; i < names.size(); ++i) {
             List<QueryResult> result = executeQueries(zmi, queries.get(i));
-            if (result == null)
+            if (result.isEmpty())
                 return false;
             Attribute certName = new Attribute(names.get(i));
             ValueCert cert = new ValueCert(certName, queries.get(i), new ArrayList<>());
@@ -222,6 +223,22 @@ public class AgentComputer extends Module implements Agent {
         System.out.println(contacts);
     }
 
+    public void updateQueries() {
+        ZMI zmi = zone;
+        if (zone != null)
+            do {
+                for (Map.Entry<Attribute, Value> e : zmi.getAttributes()) {
+                    if (Attribute.isQuery(e.getKey())) {
+                        ValueCert cert = (ValueCert) e.getValue();
+                        executeQueries(zmi, cert.getQuery());
+                    }
+                }
+                zmi = zmi.getFather();
+            } while (zmi != null);
+        else
+            System.out.println("zone not yet initialized");
+    }
+
     private static String getName(ZMI zmi) {
         return ((ValueString)zmi.getAttributes().get("name")).getValue();
 //        Value name = zmi.getAttributes().get("name");
@@ -251,4 +268,6 @@ public class AgentComputer extends Module implements Agent {
         }
         return zmi;
     }
+
+
 }

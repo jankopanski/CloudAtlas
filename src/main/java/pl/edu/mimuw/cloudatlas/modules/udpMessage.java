@@ -7,5 +7,5 @@ public class udpMessage implements Serializable {
     int parts;
     int number;
     String nodeName;
-    String data;
+    byte[] data;
 }

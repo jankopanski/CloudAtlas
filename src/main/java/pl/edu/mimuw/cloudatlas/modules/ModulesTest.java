@@ -27,8 +27,8 @@ public class ModulesTest {
 
     public static void main(String args[]) {
         //timerSimpleTest();
-        //commSimpleTest();
-        gossipTest();
+        commSimpleTest();
+        //gossipTest();
     }
 
 
@@ -48,7 +48,7 @@ public class ModulesTest {
        public void handleMsg(Message msg) {
            if (msg.type == msgType.Communication) {
                CommunicationMessage cMsg = (CommunicationMessage) msg;
-               System.out.println(cMsg.data);
+               System.out.println(new String(cMsg.data));
                System.out.println(cMsg.data.length);
                System.out.println(cMsg.IP);
                try {sleep(2000);} catch (Exception e) {e.printStackTrace();}
@@ -74,7 +74,7 @@ public class ModulesTest {
         AgentComputer.initialize(zone);
 
         GossipModule gm = GossipModule.getInstance();
-        gm.initialize(Duration.ofSeconds(1), Duration.ofSeconds(1), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
+        gm.initialize(Duration.ofSeconds(10), Duration.ofSeconds(10), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
         CommunicationModule cm = CommunicationModule.getInstance();
         cm.setDstModule(gm);
         cm.setNodeNameAndPorts("a", 1234, 1234);
@@ -108,9 +108,9 @@ public class ModulesTest {
         m1 = new CommunicationModule();
         m1.setNodeNameAndPorts("a", 1234, 5678);
         m1.setDstModule(tMdl);
-        //m2 = new CommunicationModule();
-        //m2.setNodeNameAndPorts("a", 5678, 1234);
-        //m2.setDstModule(tMdl);
+        m2 = new CommunicationModule();
+        m2.setNodeNameAndPorts("a", 5678, 1234);
+        m2.setDstModule(tMdl);
         CommunicationMessage msg1 = new CommunicationMessage();
         CommunicationMessage msg2 = new CommunicationMessage();
         msg1.destination = m1;
@@ -119,8 +119,8 @@ public class ModulesTest {
         msg1.type = msgType.Communication;
         msg2.type = msgType.Communication;
         try {
-            msg1.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)80});
-            msg2.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)80});
+            msg1.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)206});
+            msg2.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)206});
             msg1.data = "Hello world".getBytes();
             m1.sendMessage(msg1);
             String longMsg = "aaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbababababababababab";

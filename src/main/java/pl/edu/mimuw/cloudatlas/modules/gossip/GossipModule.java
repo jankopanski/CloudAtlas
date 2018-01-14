@@ -107,7 +107,7 @@ public class GossipModule extends Module {
 
     private void doGossip() {
         ZMI zone = agentComputer.getZone();
-        int level = strategy.choseLevel();
+        int level = 1;//strategy.choseLevel();
         for (int i = 0; i <= level; ++i) {
             zone = zone.getFather();
         }
@@ -274,6 +274,7 @@ public class GossipModule extends Module {
                 sendGossipPackage(gp, msg.IP);
             }
         }
+        System.out.println("Gossip successful");
     }
 
 

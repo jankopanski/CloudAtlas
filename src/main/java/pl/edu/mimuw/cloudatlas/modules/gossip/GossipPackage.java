@@ -6,7 +6,8 @@ import pl.edu.mimuw.cloudatlas.model.ValueTime;
 import java.io.Serializable;
 
 public class GossipPackage implements Serializable {
-    GossipType type;
-    ValueTime[] freshness;
-    AttributesMap[] info;
+    public GossipType type;
+    public String nodeName;
+    //public ValueTime[] freshness;
+    public AttributesMap[] info;
 }

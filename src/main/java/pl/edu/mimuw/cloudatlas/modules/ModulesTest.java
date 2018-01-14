@@ -2,9 +2,14 @@ package pl.edu.mimuw.cloudatlas.modules;
 
 import pl.edu.mimuw.cloudatlas.agent.AgentComputer;
 import pl.edu.mimuw.cloudatlas.modules.gossip.GossipModule;
+import pl.edu.mimuw.cloudatlas.modules.gossip.GossipPackage;
+import pl.edu.mimuw.cloudatlas.modules.gossip.GossipType;
 import pl.edu.mimuw.cloudatlas.modules.gossip.RandomStrategy;
 import pl.edu.mimuw.cloudatlas.model.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
@@ -44,7 +49,7 @@ public class ModulesTest {
            if (msg.type == msgType.Communication) {
                CommunicationMessage cMsg = (CommunicationMessage) msg;
                System.out.println(cMsg.data);
-               System.out.println(cMsg.data.length());
+               System.out.println(cMsg.data.length);
                System.out.println(cMsg.IP);
                try {sleep(2000);} catch (Exception e) {e.printStackTrace();}
                Module tmp = cMsg.destination;
@@ -70,7 +75,31 @@ public class ModulesTest {
 
         GossipModule gm = GossipModule.getInstance();
         gm.initialize(Duration.ofSeconds(1), Duration.ofSeconds(1), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
+        CommunicationModule cm = CommunicationModule.getInstance();
+        cm.setDstModule(gm);
+        cm.setNodeNameAndPorts("a", 1234, 1234);
         gm.startModule();
+
+        GossipPackage gp = new GossipPackage();
+        gp.nodeName = "idk";
+        //TODO add info
+        gp.type = GossipType.INITIAL;
+        gp.info = null;
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        byte[] data = null;
+        try {
+            ObjectOutputStream os = new ObjectOutputStream(stream);
+            os.writeObject(gp);
+            data = stream.toByteArray();
+            os.close();
+
+        } catch (Exception e) {e.printStackTrace();}
+
+        CommunicationMessage msg = new CommunicationMessage(CommunicationModule.getInstance(), null, data);
+
+
+        gm.sendMessage(msg);
     }
 
     public static void commSimpleTest() {
@@ -92,10 +121,10 @@ public class ModulesTest {
         try {
             msg1.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)80});
             msg2.IP = InetAddress.getByAddress(new byte[]{(byte)192, (byte)168, 0, (byte)80});
-            msg1.data = "Hello world";
+            msg1.data = "Hello world".getBytes();
             m1.sendMessage(msg1);
             String longMsg = "aaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababaababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbabababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababababbababababababababab";
-            msg2.data = longMsg;
+            msg2.data = longMsg.getBytes();
             System.out.println(longMsg.length());
             m1.sendMessage(msg2);
             m1.sendMessage(msg1);

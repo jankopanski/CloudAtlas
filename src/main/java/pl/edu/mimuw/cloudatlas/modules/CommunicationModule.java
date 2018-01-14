@@ -63,7 +63,7 @@ public class CommunicationModule extends Module {
         for (udpMessage msg : room.msges)
             sb.append(msg.data);
 
-        CommunicationMessage completeMessage = new CommunicationMessage(this, addr, sb.toString());
+        CommunicationMessage completeMessage = new CommunicationMessage(this, addr, sb.toString().getBytes());
         dstModule.sendMessage(completeMessage);
     }
 
@@ -117,11 +117,11 @@ public class CommunicationModule extends Module {
         udpMessage uMsg = new udpMessage();
         uMsg.nodeName = NodeName;
         uMsg.number = msgCounter++;
-        uMsg.parts = msg.data.length() / udpMaxLen + 1;
+        uMsg.parts = msg.data.length / udpMaxLen + 1;
         uMsg.counter = 0;
 
-        for (int i = 0; i < msg.data.length(); i += udpMaxLen) {
-            uMsg.data = msg.data.substring(i, (i + udpMaxLen <= msg.data.length() ? i + udpMaxLen : msg.data.length()));
+        for (int i = 0; i < msg.data.length; i += udpMaxLen) {
+            //uMsg.data = msg.data.substring(i, (i + udpMaxLen <= msg.data.length() ? i + udpMaxLen : msg.data.length()));
             try {
                 ObjectOutputStream os = new ObjectOutputStream(stream);
                 os.writeObject(uMsg);

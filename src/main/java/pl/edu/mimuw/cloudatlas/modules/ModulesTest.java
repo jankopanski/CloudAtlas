@@ -80,7 +80,7 @@ public class ModulesTest {
         cm.setNodeNameAndPorts("a", 1234, 1234);
         gm.startModule();
 
-        GossipPackage gp = new GossipPackage();
+        /*GossipPackage gp = new GossipPackage();
         gp.nodeName = "idk";
         //TODO add info
         gp.type = GossipType.INITIAL;
@@ -99,7 +99,7 @@ public class ModulesTest {
         CommunicationMessage msg = new CommunicationMessage(CommunicationModule.getInstance(), null, data);
 
 
-        gm.sendMessage(msg);
+        gm.sendMessage(msg);*/
     }
 
     public static void commSimpleTest() {
@@ -137,11 +137,9 @@ public class ModulesTest {
         }));
     }
     private static void createTestHierarchy() throws ParseException, UnknownHostException {
-        ValueContact violet07Contact = createContact("/uw/violet07", (byte)10, (byte)1, (byte)1, (byte)10);
-        ValueContact khaki13Contact = createContact("/uw/khaki13", (byte)10, (byte)1, (byte)1, (byte)38);
+        ValueContact violet07Contact = createContact("/uw/violet07", (byte)192, (byte)168, (byte)0, (byte)206);
         ValueContact khaki31Contact = createContact("/uw/khaki31", (byte)10, (byte)1, (byte)1, (byte)39);
-        ValueContact whatever01Contact = createContact("/pjwstk/whatever01", (byte)82, (byte)111, (byte)52, (byte)56);
-        ValueContact whatever02Contact = createContact("/pjwstk/whatever02", (byte)82, (byte)111, (byte)52, (byte)57);
+        ValueContact whatever01Contact = createContact("/pjwstk/whatever01", (byte)192, (byte)168, (byte)0, (byte)80);
 
         List<Value> list;
 
@@ -204,7 +202,7 @@ public class ModulesTest {
         khaki31.getAttributes().add("owner", new ValueString("/uw/khaki31"));
         khaki31.getAttributes().add("timestamp", new ValueTime("2012/11/09 20:03:00.000"));
         list = Arrays.asList(new Value[] {
-                violet07Contact, whatever02Contact,
+                violet07Contact,
         });
         khaki31.getAttributes().add("contacts", new ValueSet(new HashSet<Value>(list), TypePrimitive.CONTACT));
         khaki31.getAttributes().add("cardinality", new ValueInt(1l));
@@ -222,26 +220,6 @@ public class ModulesTest {
         khaki31.getAttributes().add("some_names", new ValueList(list, TypePrimitive.STRING));
         khaki31.getAttributes().add("expiry", new ValueDuration(-13l, -11l, 0l, 0l, 0l));
 
-        ZMI khaki13 = new ZMI(uw);
-        uw.addSon(khaki13);
-        khaki13.getAttributes().add("level", new ValueInt(2l));
-        khaki13.getAttributes().add("name", new ValueString("khaki13"));
-        khaki13.getAttributes().add("owner", new ValueString("/uw/khaki13"));
-        khaki13.getAttributes().add("timestamp", new ValueTime("2012/11/09 21:03:00.000"));
-        list = Arrays.asList(new Value[] {});
-        khaki13.getAttributes().add("contacts", new ValueSet(new HashSet<Value>(list), TypePrimitive.CONTACT));
-        khaki13.getAttributes().add("cardinality", new ValueInt(1l));
-        list = Arrays.asList(new Value[] {
-                khaki13Contact,
-        });
-        khaki13.getAttributes().add("members", new ValueSet(new HashSet<Value>(list), TypePrimitive.CONTACT));
-        khaki13.getAttributes().add("creation", new ValueTime((Long)null));
-        khaki13.getAttributes().add("cpu_usage", new ValueDouble(0.1));
-        khaki13.getAttributes().add("num_cores", new ValueInt(null));
-        khaki13.getAttributes().add("has_ups", new ValueBoolean(true));
-        list = Arrays.asList(new Value[] {});
-        khaki13.getAttributes().add("some_names", new ValueList(list, TypePrimitive.STRING));
-        khaki13.getAttributes().add("expiry", new ValueDuration((Long)null));
 
         ZMI whatever01 = new ZMI(pjwstk);
         pjwstk.addSon(whatever01);
@@ -250,7 +228,7 @@ public class ModulesTest {
         whatever01.getAttributes().add("owner", new ValueString("/uw/whatever01"));
         whatever01.getAttributes().add("timestamp", new ValueTime("2012/11/09 21:12:00.000"));
         list = Arrays.asList(new Value[] {
-                violet07Contact, whatever02Contact,
+                violet07Contact,
         });
         whatever01.getAttributes().add("contacts", new ValueSet(new HashSet<Value>(list), TypePrimitive.CONTACT));
         whatever01.getAttributes().add("cardinality", new ValueInt(1l));
@@ -265,28 +243,5 @@ public class ModulesTest {
                 new ValueString("rewrite")
         });
         whatever01.getAttributes().add("php_modules", new ValueList(list, TypePrimitive.STRING));
-
-        ZMI whatever02 = new ZMI(pjwstk);
-        pjwstk.addSon(whatever02);
-        whatever02.getAttributes().add("level", new ValueInt(2l));
-        whatever02.getAttributes().add("name", new ValueString("whatever02"));
-        whatever02.getAttributes().add("owner", new ValueString("/uw/whatever02"));
-        whatever02.getAttributes().add("timestamp", new ValueTime("2012/11/09 21:13:00.000"));
-        list = Arrays.asList(new Value[] {
-                khaki31Contact, whatever01Contact,
-        });
-        whatever02.getAttributes().add("contacts", new ValueSet(new HashSet<Value>(list), TypePrimitive.CONTACT));
-        whatever02.getAttributes().add("cardinality", new ValueInt(1l));
-        list = Arrays.asList(new Value[] {
-                whatever02Contact,
-        });
-        whatever02.getAttributes().add("members", new ValueSet(new HashSet<Value>(list), TypePrimitive.CONTACT));
-        whatever02.getAttributes().add("creation", new ValueTime("2012/10/18 07:04:00.000"));
-        whatever02.getAttributes().add("cpu_usage", new ValueDouble(0.4));
-        whatever02.getAttributes().add("num_cores", new ValueInt(13l));
-        list = Arrays.asList(new Value[] {
-                new ValueString("odbc")
-        });
-        whatever02.getAttributes().add("php_modules", new ValueList(list, TypePrimitive.STRING));
     }
 }

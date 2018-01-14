@@ -71,7 +71,7 @@ public class ModulesTest {
         try {
             createTestHierarchy();
         } catch (Exception e) {}
-        AgentComputer.initialize(zone);
+        //AgentComputer.initialize(zone);
 
         GossipModule gm = GossipModule.getInstance();
         gm.initialize(Duration.ofSeconds(10), Duration.ofSeconds(10), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);

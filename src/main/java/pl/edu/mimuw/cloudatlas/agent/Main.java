@@ -94,10 +94,10 @@ public class Main {
     }
 
     private static void createTestHierarchy() throws ParseException, UnknownHostException {
-        ValueContact violet07Contact = createContact("/uw/violet07", (byte)10, (byte)1, (byte)1, (byte)10);
+        ValueContact violet07Contact = createContact("/uw/violet07", (byte)192, (byte)168, (byte)0, (byte)206);
         ValueContact khaki13Contact = createContact("/uw/khaki13", (byte)10, (byte)1, (byte)1, (byte)38);
         ValueContact khaki31Contact = createContact("/uw/khaki31", (byte)10, (byte)1, (byte)1, (byte)39);
-        ValueContact whatever01Contact = createContact("/uw/whatever01", (byte)82, (byte)111, (byte)52, (byte)56);
+        ValueContact whatever01Contact = createContact("/uw/whatever01", (byte)192, (byte)168, (byte)0, (byte)80);
         ValueContact whatever02Contact = createContact("/uw/whatever02", (byte)82, (byte)111, (byte)52, (byte)57);
 
         List<Value> list;

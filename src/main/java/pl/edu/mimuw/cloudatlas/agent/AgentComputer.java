@@ -6,6 +6,8 @@ import pl.edu.mimuw.cloudatlas.interpreter.query.Yylex;
 import pl.edu.mimuw.cloudatlas.interpreter.query.parser;
 import pl.edu.mimuw.cloudatlas.model.*;
 import pl.edu.mimuw.cloudatlas.modules.*;
+import pl.edu.mimuw.cloudatlas.modules.gossip.GossipModule;
+import pl.edu.mimuw.cloudatlas.modules.gossip.RandomStrategy;
 import pl.edu.mimuw.cloudatlas.security.InvalidQueryException;
 import pl.edu.mimuw.cloudatlas.security.Signature;
 import pl.edu.mimuw.cloudatlas.security.SignatureChecker;
@@ -15,6 +17,7 @@ import java.io.ByteArrayInputStream;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.time.Duration;
 import java.util.*;
 
 public class AgentComputer extends Module implements Agent {
@@ -30,6 +33,7 @@ public class AgentComputer extends Module implements Agent {
 
     private AgentComputer() {
         new Thread(() -> this.runModule()).start();
+
     }
 
     public static void initialize(ZMI zone, PublicKey publicKey) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException {
@@ -38,6 +42,12 @@ public class AgentComputer extends Module implements Agent {
         while (INSTANCE.root.getFather() != null)
             INSTANCE.root = INSTANCE.root.getFather();
         signatureChecker = new SignatureChecker(publicKey);
+        GossipModule gm = GossipModule.getInstance();
+        gm.initialize(Duration.ofSeconds(10), Duration.ofSeconds(10), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
+        CommunicationModule cm = CommunicationModule.getInstance();
+        cm.setDstModule(gm);
+        cm.setNodeNameAndPorts("/uw/violet07", 1234, 1234);
+        GossipModule.getInstance().startModule();
     }
 
     @Override

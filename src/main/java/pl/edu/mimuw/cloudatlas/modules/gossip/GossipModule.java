@@ -189,7 +189,7 @@ public class GossipModule extends Module {
         while (zone != null) {
             q.add(zone);
             zone = zone.getFather();
-            if (q.size() > gp.info.length + 1)
+            if (q.size() > gp.zonesCnt + 1)
                 q.poll();
         }
         zone = q.peek();

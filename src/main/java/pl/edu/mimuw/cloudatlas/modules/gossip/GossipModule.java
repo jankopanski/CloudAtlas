@@ -140,7 +140,7 @@ public class GossipModule extends Module {
 
             GossipPackage gp = new GossipPackage();
             int i = 0;
-            while(chosenSibling != null) {
+            while(chosenSibling.getFather() != null) {
                 chosenSibling = chosenSibling.getFather();
                 ++i;
             }
@@ -184,6 +184,7 @@ public class GossipModule extends Module {
     }
 
     private ZMI findZone(GossipPackage gp) {
+        System.out.println("have to find zone " + gp.zonesCnt);
         ZMI zone = AgentComputer.getInstance().getZone();
         Queue<ZMI> q = new ArrayQueue<>();
         while (zone != null) {
@@ -193,6 +194,7 @@ public class GossipModule extends Module {
                 q.poll();
         }
         zone = q.peek();
+        System.out.println("found " + zone.getAttributes().getOrNull("name").toString());
         gossipsInProgress.put(gp.nodeName, zone);
         return zone;
     }
@@ -210,29 +212,32 @@ public class GossipModule extends Module {
         long dT = SndTimestamp + rtd / 2 - RcvTimestamp;
         for (int i = 0; i < gp.info.length; ++i) {
             AttributesMap fromGossip = gp.info[i];
-            if (fromGossip == null)
-                continue;
-            ValueTime myTs, theirTs;
-            myTs = (ValueTime) zone.getAttributes().getOrNull("timestamp");
-            theirTs = (ValueTime) fromGossip.getOrNull("timestamp");
+            if (fromGossip != null) {
+                ValueTime myTs, theirTs;
+                myTs = (ValueTime) zone.getAttributes().getOrNull("timestamp");
+                theirTs = (ValueTime) fromGossip.getOrNull("timestamp");
 
-            if (myTs == null || theirTs == null) {
-                gp.info[i] = null;
-                continue;
-            }
+                if (myTs == null || theirTs == null) {
+                    gp.info[i] = null;
+                    zone = zone.getFather();
+                    continue;
+                }
 
-            String s1 = ((ValueString) fromGossip.getOrNull("name")).getValue();
-            String s2 = ((ValueString) zone.getAttributes().getOrNull("name")).getValue();
-            System.out.println("my " + s2 + " vs " + s1);
-            System.out.println(myTs);
-            System.out.println(theirTs);
-            if (myTs.isLowerThan(theirTs.subtract(new ValueDuration(dT))).getValue()) {
-                zone.setAttributes(fromGossip);
-                System.out.println("ZMI adopted: " + ((ValueString) fromGossip.getOrNull("name")).getValue());
-                gp.info[i] = null;
-            } else {
-                gp.info[i] = zone.getAttributes();
+                String s1 = ((ValueString) fromGossip.getOrNull("name")).getValue();
+                String s2 = ((ValueString) zone.getAttributes().getOrNull("name")).getValue();
+                System.out.println("my " + s2 + " vs " + s1);
+                System.out.println(myTs);
+                System.out.println(theirTs);
+                System.out.println(rtd);
+                System.out.println(dT);
+                if (myTs.isLowerThan(theirTs.subtract(new ValueDuration(dT))).getValue()) {
+                    zone.setAttributes(fromGossip);
+                    System.out.println("ZMI adopted: " + ((ValueString) fromGossip.getOrNull("name")).getValue());
+                    gp.info[i] = null;
+                } else {
+                    gp.info[i] = zone.getAttributes();
 
+                }
             }
             zone = zone.getFather();
         }

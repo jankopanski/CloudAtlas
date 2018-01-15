@@ -1,0 +1,26 @@
+{
+	"path": "/uw/TM",
+	"gossip": {
+		"port": 1234,
+		"gossip_timeout": 10,
+		"update_timeout": 10,
+		"strategy": "random",
+		"levels": 2,
+		"switches": 1,
+		"max_contacts": 10
+	},
+	"expiry": "+13 12:00:00.000",
+	"contacts": [{
+			"path": "/uw/TM",
+			"host": "TM",
+			"port": 1100
+		},
+		{
+			"path": "/uw/UTM",
+			"host": "192.168.1.229",
+			"port": 1100
+		}
+	],
+	"has_ups": null,
+	"some_names": ["tola", "tosia"]
+}

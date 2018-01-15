@@ -3,6 +3,23 @@ var refreshTime = 2000;
 var nextReadId = 0;
 var timeoutVar = null;
 
+function connectTo(ipOrHost, port) {
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function () {
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                alert(this.responseText);
+            }
+        }
+    };
+    req.open("POST", "request", true);
+    req.setRequestHeader("Content-Type", "application/json");
+    var qJson = JSON.stringify({agent: ipOrHost, type: "switchAgent", query: port});
+    req.send(qJson);
+
+
+}
+
 function changeAgent(newAgent) {
     setAgent(newAgent, function () {
         aname = newAgent;

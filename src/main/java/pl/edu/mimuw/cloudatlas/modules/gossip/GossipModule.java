@@ -80,6 +80,8 @@ public class GossipModule extends Module {
     }
 
     private void updateContactInfo(Set<Value> contacts) {
+        ZMI zone = AgentComputer.getInstance().getZone();
+
         for (Value v: contacts) {
             ValueContact contact = (ValueContact) v;
             if (!myPathName.equals(((ValueContact) v).getName())) {
@@ -91,6 +93,28 @@ public class GossipModule extends Module {
                 do {
                     cStr = contCompo.next();
                 } while (myCompo.next().equals(cStr));
+                while (myCompo.hasNext()) {
+                    i++;
+                    myCompo.next();
+                }
+                for (int j = 0; j <= i; ++j) {
+                    zone = zone.getFather();
+                }
+                boolean sonFound = false;
+                for (ZMI son : zone.getSons()) {
+                    ValueString sonName = (ValueString) son.getAttributes().getOrNull("name");
+                    if (sonName.getValue().equals(cStr)) {
+                        sonFound = true;
+                    }
+                }
+                if (!sonFound) {
+                    ZMI newSon = new ZMI(zone);
+                    zone.addSon(newSon);
+                    newSon.getAttributes().add("name", new ValueString(cStr));
+                    newSon.getAttributes().add("timestamp", new ValueTime(0L));
+                    newSon.getAttributes().add("contacts", new ValueSet(TypePrimitive.CONTACT));
+                }
+
                 myContacts.compute(cStr, (key, val) -> {
                     if (val == null) {
                         LinkedList<ValueContact> ret = new LinkedList<>();
@@ -106,6 +130,7 @@ public class GossipModule extends Module {
                 });
             }
         }
+        System.out.println("done");
     }
 
     private void doGossip() {

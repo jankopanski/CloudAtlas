@@ -64,12 +64,6 @@ public class Client extends Module {
 
     }
 
-//    private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
-//            throws UnknownHostException {
-//        return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
-//                ip1, ip2, ip3, ip4
-//        }));
-//    }
 
     private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
             throws UnknownHostException {
@@ -143,6 +137,15 @@ public class Client extends Module {
                         agent.setContacts(contacts);
                         result.setStatus(Status.OK);
                     }
+                case "switchAgent":
+                    System.out.println(req.getAgent());
+                    System.out.println(req.getQuery());
+                    try {
+                        agent = connectAgent(req.getAgent(), Integer.parseInt(req.getQuery()));
+                    } catch (Exception e) {e.printStackTrace(); return result;}
+                    result.setStatus(Status.OK);
+                    result.response = "OK";
+                    break;
                 default:
                     break;
             }

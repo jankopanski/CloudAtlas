@@ -12,9 +12,12 @@
 <body style>
     <a href="index.html", onclick="clearCookies()">disconnect</a>
     <input type="text">
-    <input type="button" value="change agent" onclick="changeAgent(this.previousSibling.previousSibling.value)">
+    <input type="button" value="change zone" onclick="changeAgent(this.previousSibling.previousSibling.value)">
     <input type="number" style="float: right" placeholder="2000">
     <input type="button" value="set refresh interval (ms)" onclick="setRefresh(this.previousSibling.previousSibling)" style="float: right">
+    <input type="text" style="float: right" placeholder="host/IP">
+    <input type="text" style="float: right" placeholder="Port">
+    <input type="button" value="change agent" onclick="connectTo(this.previousSibling.previousSibling.value, this.previousSibling.previousSibling.previousSibling.previousSibling.value)" style="float: right">
     <div style="display: flex; justify-content: space-between; width: 100%">
 
     <div style="width: 70%">

@@ -8,6 +8,7 @@ import pl.edu.mimuw.cloudatlas.model.*;
 import pl.edu.mimuw.cloudatlas.modules.*;
 import pl.edu.mimuw.cloudatlas.modules.gossip.GossipModule;
 import pl.edu.mimuw.cloudatlas.modules.gossip.RandomStrategy;
+import pl.edu.mimuw.cloudatlas.modules.gossip.RoundRobinStrategy;
 import pl.edu.mimuw.cloudatlas.security.InvalidQueryException;
 import pl.edu.mimuw.cloudatlas.security.Signature;
 import pl.edu.mimuw.cloudatlas.security.SignatureChecker;
@@ -193,10 +194,8 @@ public class AgentComputer extends Module implements Agent {
     }
 
     public static void removeCert(ZMI zmi, String queryName) {
-        if (!zmi.getSons().isEmpty()) {
-            for (ZMI son : zmi.getSons()) {
-                removeCert(son, queryName);
-            }
+        if (zmi != null) {
+            removeCert(zmi.getFather(), queryName);
             ValueCert cert = (ValueCert) zmi.getAttributes().getOrNull(queryName);
             if (cert != null) {
                 for (Attribute a : cert.getAttributes())

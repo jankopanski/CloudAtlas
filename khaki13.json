@@ -1,12 +1,21 @@
 {
 	"path": "/uw/khaki13",
-    "expiry": null,
-	"has_ups": true,
-	"some_names": [],
+	"gossip": {
+		"port": 1234,
+		"gossip_timeout": 10,
+		"update_timeout": 10,
+		"strategy": "random",
+		"levels": 2,
+		"switches": 1,
+		"max_contacts": 10
+	},
+	"expiry": "null",
 	"contacts": [{
 			"path": "/uw/khaki13",
 			"host": "10.1.1.38",
 			"port": 1100
 		}
-	]
+	],
+    "has_ups": true,
+    "some_names": []
 }

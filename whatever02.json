@@ -1,7 +1,15 @@
 {
 	"path": "/pjwstk/whatever02",
-    "expiry": null,
-	"php_modules": ["odbc"],
+	"gossip": {
+		"port": 1234,
+		"gossip_timeout": 10,
+		"update_timeout": 10,
+		"strategy": "random",
+		"levels": 2,
+		"switches": 1,
+		"max_contacts": 10
+	},
+	"expiry": null,
 	"contacts": [{
 			"path": "/pjwstk/whatever01",
 			"host": "82.111.52.56",
@@ -17,5 +25,6 @@
 			"host": "82.111.52.57",
 			"port": 1103
 		}
-	]
+	],
+	"php_modules": ["odbc"]
 }

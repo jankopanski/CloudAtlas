@@ -1,23 +1,16 @@
 package pl.edu.mimuw.cloudatlas.agent;
 
-import pl.edu.mimuw.cloudatlas.model.Attribute;
-import pl.edu.mimuw.cloudatlas.model.Value;
-import pl.edu.mimuw.cloudatlas.model.ValueCert;
 import pl.edu.mimuw.cloudatlas.model.ZMI;
 import pl.edu.mimuw.cloudatlas.modules.RMIModule;
+import pl.edu.mimuw.cloudatlas.modules.gossip.GossipConfig;
 import pl.edu.mimuw.cloudatlas.security.KeyReader;
 import pl.edu.mimuw.cloudatlas.security.KeyReaderException;
 
 import java.io.IOException;
 import java.security.PublicKey;
 import java.text.ParseException;
-import java.util.Map;
 
 public class Main {
-    private static ZMI root, zone;
-    private static String host;
-    private static int port;
-
     public static void main(String[] args) {
         if (args.length != 2) {
             System.err.println("Usage: Main <public_key> <config_file>");
@@ -26,10 +19,6 @@ public class Main {
 
         try {
             ZMICreator.createHierarchy(args[1]);
-            root = ZMICreator.getRoot();
-            zone = ZMICreator.getZone();
-            host = ZMICreator.getHost();
-            port = ZMICreator.getPort();
 
         } catch (IOException | org.json.simple.parser.ParseException | InvalidConfigException | ParseException e) {
             e.printStackTrace();
@@ -47,7 +36,7 @@ public class Main {
 
         AgentComputer agent = AgentComputer.getInstance();
         try {
-            AgentComputer.initialize(zone, publicKey);
+            AgentComputer.initialize(ZMICreator.getZone(), publicKey, ZMICreator.getGossipConfig());
         }
         catch (Exception e) {
             System.err.println("Agent initialization error");
@@ -56,7 +45,7 @@ public class Main {
         }
         RMIModule rmi = RMIModule.getInstance();
 
-        AgentServer server = new AgentServer(rmi, host, port);
+        AgentServer server = new AgentServer(rmi, ZMICreator.getHost(), ZMICreator.getPort());
         server.run();
     }
 }

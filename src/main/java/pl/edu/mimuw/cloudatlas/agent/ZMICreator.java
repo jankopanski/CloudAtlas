@@ -1,21 +1,25 @@
 package pl.edu.mimuw.cloudatlas.agent;
 
+import lombok.Getter;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import pl.edu.mimuw.cloudatlas.model.*;
+import pl.edu.mimuw.cloudatlas.modules.gossip.GossipConfig;
 
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.time.Duration;
 import java.util.*;
 
 public class ZMICreator {
-    private static ZMI root, zmi;
-    private static String host;
-    private static int port;
+    @Getter private static ZMI root, zone;
+    @Getter private static String host;
+    @Getter private static int port;
+    @Getter private static GossipConfig gossipConfig = new GossipConfig();
 
     private static JSONObject readConfig(String file) throws IOException, ParseException {
         JSONParser parser = new JSONParser();
@@ -23,17 +27,32 @@ public class ZMICreator {
     }
 
     static void createHierarchy(String file) throws IOException, ParseException, InvalidConfigException, java.text.ParseException {
+        Object tmpObj = null;
         JSONObject obj = readConfig(file);
         Long timestamp = System.currentTimeMillis() / 1000L;
         PathName path = new PathName((String) obj.get("path"));
+        JSONObject gossip = (JSONObject) obj.get("gossip");
         String expiry = (String) obj.get("expiry");
         JSONArray contactsObj = (JSONArray) obj.get("contacts");
         obj.remove("path");
         obj.remove("expiry");
         obj.remove("contacts");
+        obj.remove("gossip");
 
         int size = path.getComponents().size();
         if (path.getComponents().isEmpty()) throw new InvalidConfigException();
+
+        tmpObj = obj.get("gossip_timeout");
+        gossipConfig.setGossipTimeout(tmpObj == null ? Duration.ofSeconds(5) : Duration.ofSeconds((Long) tmpObj));
+        tmpObj = obj.get("update_timeout");
+        gossipConfig.setUpdateTimeout(tmpObj == null ? Duration.ofSeconds(5) : Duration.ofSeconds((Long) tmpObj));
+        gossipConfig.setStrategy((String) gossip.get("strategy"));
+        gossipConfig.setLevels(((Long) gossip.get("levels")).intValue());
+        gossipConfig.setSwitches(((Long) gossip.get("switches")).intValue());
+        gossipConfig.setMaxContacts(((Long) gossip.get("max_contacts")).intValue());
+        gossipConfig.setPort(((Long) gossip.get("port")).intValue());
+        gossipConfig.setPath(path);
+
 
         List<ValueContact> contacts = new ArrayList<>();
         for (Object entryObj : contactsObj) {
@@ -51,27 +70,27 @@ public class ZMICreator {
         }
 
         root = new ZMI();
-        zmi = root;
+        zone = root;
 
         for (int i = 0; i < size; ++i) {
-            zmi.getAttributes().add("level", new ValueInt((long) i));
-            zmi.getAttributes().add("name",
+            zone.getAttributes().add("level", new ValueInt((long) i));
+            zone.getAttributes().add("name",
                     i == 0 ? new ValueString(null) : new ValueString(path.getComponents().get(i - 1)));
-            zmi.getAttributes().add("owner", new ValueString(path.getName()));
-            zmi.getAttributes().add("timestamp", new ValueTime(timestamp));
-            zmi.getAttributes().add("contacts", new ValueSet(TypePrimitive.CONTACT));
-            zmi.getAttributes().add("cardinality", new ValueInt(0L));
-            zmi = new ZMI(zmi);
+            zone.getAttributes().add("owner", new ValueString(path.getName()));
+            zone.getAttributes().add("timestamp", new ValueTime(timestamp));
+            zone.getAttributes().add("contacts", new ValueSet(TypePrimitive.CONTACT));
+            zone.getAttributes().add("cardinality", new ValueInt(0L));
+            zone = new ZMI(zone);
         }
 
-        zmi.getAttributes().add("level", new ValueInt((long) size));
-        zmi.getAttributes().add("name", new ValueString(path.getSingletonName()));
-        zmi.getAttributes().add("owner", new ValueString(path.getName()));
-        zmi.getAttributes().add("timestamp", new ValueTime(timestamp));
-        zmi.getAttributes().add("creation", new ValueTime(timestamp));
-        zmi.getAttributes().add("expiry", expiry == null ? ValueNull.getInstance() : new ValueDuration(expiry));
-        zmi.getAttributes().add("cardinality", new ValueInt(1L));
-        zmi.getAttributes().add("contacts", new ValueSet(new HashSet<>(contacts), TypePrimitive.CONTACT));
+        zone.getAttributes().add("level", new ValueInt((long) size));
+        zone.getAttributes().add("name", new ValueString(path.getSingletonName()));
+        zone.getAttributes().add("owner", new ValueString(path.getName()));
+        zone.getAttributes().add("timestamp", new ValueTime(timestamp));
+        zone.getAttributes().add("creation", new ValueTime(timestamp));
+        zone.getAttributes().add("expiry", expiry == null ? ValueNull.getInstance() : new ValueDuration(expiry));
+        zone.getAttributes().add("cardinality", new ValueInt(1L));
+        zone.getAttributes().add("contacts", new ValueSet(new HashSet<>(contacts), TypePrimitive.CONTACT));
 
         obj.forEach((key, value) -> {
             Value modelValue;
@@ -96,23 +115,7 @@ public class ZMICreator {
             else {
                 modelValue = new ValueString((String) value);
             }
-            zmi.getAttributes().add((String) key, modelValue);
+            zone.getAttributes().add((String) key, modelValue);
         });
-    }
-
-    static ZMI getRoot() {
-        return root;
-    }
-
-    static ZMI getZone() {
-        return zmi;
-    }
-
-    static String getHost() {
-        return host;
-    }
-
-    static int getPort() {
-        return port;
     }
 }

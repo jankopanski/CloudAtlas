@@ -101,7 +101,6 @@ public class Main {
         pjwstk.getAttributes().add("cardinality", new ValueInt(0l));
 
         ZMI violet07 = new ZMI(uw);
-        zone = violet07;
         uw.addSon(violet07);
         violet07.getAttributes().add("level", new ValueInt(2l));
         violet07.getAttributes().add("name", new ValueString("violet07"));
@@ -128,6 +127,7 @@ public class Main {
 
         ZMI khaki31 = new ZMI(uw);
         uw.addSon(khaki31);
+        zone = khaki31;
         khaki31.getAttributes().add("level", new ValueInt(2l));
         khaki31.getAttributes().add("name", new ValueString("khaki31"));
         khaki31.getAttributes().add("owner", new ValueString("/uw/khaki31"));

@@ -43,10 +43,10 @@ public class AgentComputer extends Module implements Agent {
             INSTANCE.root = INSTANCE.root.getFather();
         signatureChecker = new SignatureChecker(publicKey);
         GossipModule gm = GossipModule.getInstance();
-        gm.initialize(Duration.ofSeconds(5), Duration.ofSeconds(5), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
+        gm.initialize(Duration.ofSeconds(10), Duration.ofSeconds(10), new RandomStrategy(2, 1), zone, new PathName("/uw/khaki31"), 10);
         CommunicationModule cm = CommunicationModule.getInstance();
         cm.setDstModule(gm);
-        cm.setNodeNameAndPorts("/uw/violet07", 1234, 1234);
+        cm.setNodeNameAndPorts("/uw/khaki31", 1234, 1234);
         GossipModule.getInstance().startModule();
     }
 
@@ -229,6 +229,7 @@ public class AgentComputer extends Module implements Agent {
         if (zmi == null || !zmi.getSons().isEmpty()) return;
         zmi.getAttributes().addOrChange(attributes);
         markTime(zmi);
+        System.out.println("update");
         // TODO Should setValues add new attributes or only modify existing attributes
 //        AttributesMap zoneAttributes = zmi.getAttributes();
 //        for (Map.Entry<Attribute, Value> entry : attributes) {

@@ -69,7 +69,7 @@ public class ZMICreator {
         zmi.getAttributes().add("owner", new ValueString(path.getName()));
         zmi.getAttributes().add("timestamp", new ValueTime(timestamp));
         zmi.getAttributes().add("creation", new ValueTime(timestamp));
-        zmi.getAttributes().add("expiry", new ValueDuration(expiry));
+        zmi.getAttributes().add("expiry", expiry == null ? ValueNull.getInstance() : new ValueDuration(expiry));
         zmi.getAttributes().add("cardinality", new ValueInt(1L));
         zmi.getAttributes().add("contacts", new ValueSet(new HashSet<>(contacts), TypePrimitive.CONTACT));
 

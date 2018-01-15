@@ -1,0 +1,21 @@
+{
+	"path": "/pjwstk/whatever01",
+    "expiry": null,
+	"php_modules": ["rewrite"],
+	"contacts": [{
+			"path": "/pjwstk/whatever01",
+			"host": "82.111.52.56",
+			"port": 1102
+		},
+        {
+			"path": "/uw/violet07",
+			"host": "10.1.1.10",
+			"port": 1099
+		},
+		{
+			"path": "/pjwstk/whatever02",
+			"host": "82.111.52.57",
+			"port": 1103
+		}
+	]
+}

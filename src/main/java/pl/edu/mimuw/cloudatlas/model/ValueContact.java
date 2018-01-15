@@ -25,6 +25,7 @@
 package pl.edu.mimuw.cloudatlas.model;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import pl.edu.mimuw.cloudatlas.model.Value;
 import pl.edu.mimuw.cloudatlas.model.ValueContact;
@@ -37,7 +38,7 @@ import pl.edu.mimuw.cloudatlas.model.ValueContact;
  */
 public class ValueContact extends Value {
 	private final PathName name;
-	private final InetAddress address;
+	private final InetSocketAddress address;
 	
 	/**
 	 * Constructs a new <code>ValueContact</code> with the specified path name and IP address.
@@ -45,7 +46,7 @@ public class ValueContact extends Value {
 	 * @param name the full path name of a node
 	 * @param address the IP address of the node
 	 */
-	public ValueContact(PathName name, InetAddress address) {
+	public ValueContact(PathName name, InetSocketAddress address) {
 		this.name = name;
 		this.address = address;
 	}
@@ -70,8 +71,12 @@ public class ValueContact extends Value {
 	 * @return the IP address of a node
 	 */
 	public InetAddress getAddress() {
-		return address;
+		return address.getAddress();
 	}
+
+    public InetSocketAddress getSocketAddress() {
+        return address;
+    }
 	
 	@Override
 	public Type getType() {

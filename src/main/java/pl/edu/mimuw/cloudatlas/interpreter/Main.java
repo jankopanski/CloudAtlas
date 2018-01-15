@@ -26,6 +26,7 @@ package pl.edu.mimuw.cloudatlas.interpreter;
 
 import java.io.ByteArrayInputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.util.Arrays;
@@ -83,12 +84,19 @@ public class Main {
 			}
 		}
 	}
-	
+
+//	private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
+//			throws UnknownHostException {
+//		return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
+//				ip1, ip2, ip3, ip4
+//		}));
+//	}
+
 	private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
 			throws UnknownHostException {
-		return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
-			ip1, ip2, ip3, ip4
-		}));
+		return new ValueContact(new PathName(path),
+				new InetSocketAddress(InetAddress.getByAddress(new byte[] {ip1, ip2, ip3, ip4}),
+						0));
 	}
 
 	private static ZMI createTestHierarchy() throws ParseException, UnknownHostException {

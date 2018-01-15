@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
 import java.time.Duration;
@@ -131,11 +132,17 @@ public class ModulesTest {
             m1.sendMessage(msg1);
         } catch (Exception e) {}
     }
+//    private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
+//            throws UnknownHostException {
+//        return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
+//                ip1, ip2, ip3, ip4
+//        }));
+//    }
     private static ValueContact createContact(String path, byte ip1, byte ip2, byte ip3, byte ip4)
             throws UnknownHostException {
-        return new ValueContact(new PathName(path), InetAddress.getByAddress(new byte[] {
-                ip1, ip2, ip3, ip4
-        }));
+        return new ValueContact(new PathName(path),
+                new InetSocketAddress(InetAddress.getByAddress(new byte[] {ip1, ip2, ip3, ip4}),
+                        0));
     }
     private static void createTestHierarchy() throws ParseException, UnknownHostException {
         ValueContact violet07Contact = createContact("/uw/violet07", (byte)192, (byte)168, (byte)0, (byte)206);

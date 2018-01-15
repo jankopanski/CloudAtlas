@@ -1,0 +1,12 @@
+{
+	"path": "/uw/khaki13",
+    "expiry": null,
+	"has_ups": true,
+	"some_names": [],
+	"contacts": [{
+			"path": "/uw/khaki13",
+			"host": "10.1.1.38",
+			"port": 1100
+		}
+	]
+}

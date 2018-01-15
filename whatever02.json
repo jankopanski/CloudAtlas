@@ -1,0 +1,21 @@
+{
+	"path": "/pjwstk/whatever02",
+    "expiry": null,
+	"php_modules": ["odbc"],
+	"contacts": [{
+			"path": "/pjwstk/whatever01",
+			"host": "82.111.52.56",
+			"port": 1102
+		},
+        {
+			"path": "/uw/khaki31",
+			"host": "10.1.1.39",
+			"port": 1101
+		},
+		{
+			"path": "/pjwstk/whatever02",
+			"host": "82.111.52.57",
+			"port": 1103
+		}
+	]
+}

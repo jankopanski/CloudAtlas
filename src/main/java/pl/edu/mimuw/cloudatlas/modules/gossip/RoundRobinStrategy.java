@@ -12,7 +12,7 @@ public class RoundRobinStrategy extends GossipStrategy {
 
     public int choseLevel() {
         if (lastLvlCount == switchCount) {
-            lastLvlCount = 1;
+            lastLvlCount = 0;
             if (lastLvl == levels - 1) {
                 lastLvl = 0;
                 switchCount = lowLevelsBias;

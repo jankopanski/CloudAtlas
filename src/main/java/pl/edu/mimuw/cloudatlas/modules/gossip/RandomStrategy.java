@@ -15,14 +15,14 @@ public class RandomStrategy extends GossipStrategy {
     }
 
     public int choseLevel() {
-         int rand = rng.nextInt() % randomHelper;
+         int rand = rng.nextInt(randomHelper);
          int i = lowLevelsBias;
-         int result = 0;
-         while (rand > 0) {
+         int result = -1;
+         do {
              rand -= i;
              i *= lowLevelsBias;
              result++;
-         }
+         } while (rand >= 0);
          return result;
     }
 }

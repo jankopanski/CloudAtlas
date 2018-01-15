@@ -44,7 +44,6 @@ public class AgentComputer extends Module implements Agent {
             INSTANCE.root = INSTANCE.root.getFather();
         signatureChecker = new SignatureChecker(publicKey);
         GossipModule gm = GossipModule.getInstance();
-//        gm.initialize(Duration.ofSeconds(5), Duration.ofSeconds(5), new RandomStrategy(2, 1), zone, new PathName("/uw/violet07"), 10);
         int lvls = gossipConfig.getLevels(), llb = gossipConfig.getSwitches();
         GossipStrategy gossipStrategy = gossipConfig.getStrategy() == "random" ? new RandomStrategy(lvls, llb) : new RoundRobinStrategy(lvls, llb);
         gm.initialize(gossipConfig.getGossipTimeout(), gossipConfig.getUpdateTimeout(), gossipStrategy, zone, gossipConfig.getPath(), gossipConfig.getMaxContacts());
@@ -197,10 +196,8 @@ public class AgentComputer extends Module implements Agent {
     }
 
     public static void removeCert(ZMI zmi, String queryName) {
-        if (!zmi.getSons().isEmpty()) {
-            for (ZMI son : zmi.getSons()) {
-                removeCert(son, queryName);
-            }
+        if (zmi != null) {
+            removeCert(zmi.getFather(), queryName);
             ValueCert cert = (ValueCert) zmi.getAttributes().getOrNull(queryName);
             if (cert != null) {
                 for (Attribute a : cert.getAttributes())

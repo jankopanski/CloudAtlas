@@ -75,40 +75,43 @@ public class GossipModule extends Module {
         ValueSet conts = (ValueSet) zmi.getAttributes().getOrNull("contacts");
         if (conts != null) {
             Set<Value> contacts = conts.getValue();
-            for (Value v: contacts) {
-                ValueContact contact = (ValueContact) v;
-                if (!myPathName.equals(((ValueContact) v).getName())) {
-                    Iterator<String> myCompo, contCompo;
-                    myCompo = myPathName.getComponents().iterator();
-                    contCompo = contact.getName().getComponents().iterator();
-                    int i = 0;
-                    String cStr;
-                    do {
-                        cStr = contCompo.next();
-                    } while (myCompo.next().equals(cStr));
-                    myContacts.compute(cStr, (key, val) -> {
-                        if (val == null) {
-                            LinkedList<ValueContact> ret = new LinkedList<>();
-                            ret.add(contact);
-                            return ret;
-                        }
-                        else {
-                            val.add(contact);
-                            if (val.size() > maxLevelContacts)
-                                val.remove(rng.nextInt(maxLevelContacts));
-                            return val;
-                        }
-                    });
-                }
+            updateContactInfo(contacts);
+        }
+    }
+
+    private void updateContactInfo(Set<Value> contacts) {
+        for (Value v: contacts) {
+            ValueContact contact = (ValueContact) v;
+            if (!myPathName.equals(((ValueContact) v).getName())) {
+                Iterator<String> myCompo, contCompo;
+                myCompo = myPathName.getComponents().iterator();
+                contCompo = contact.getName().getComponents().iterator();
+                int i = 0;
+                String cStr;
+                do {
+                    cStr = contCompo.next();
+                } while (myCompo.next().equals(cStr));
+                myContacts.compute(cStr, (key, val) -> {
+                    if (val == null) {
+                        LinkedList<ValueContact> ret = new LinkedList<>();
+                        ret.add(contact);
+                        return ret;
+                    }
+                    else {
+                        val.add(contact);
+                        if (val.size() > maxLevelContacts)
+                            val.remove(rng.nextInt(maxLevelContacts));
+                        return val;
+                    }
+                });
             }
         }
-
     }
 
     private void doGossip() {
         System.out.println("Gossip");
         ZMI zone = agentComputer.getZone();
-        int level = 0;//strategy.choseLevel();
+        int level = strategy.choseLevel();
         for (int i = 0; i <= level; ++i) {
             zone = zone.getFather();
         }
@@ -207,6 +210,39 @@ public class GossipModule extends Module {
         return zone;
     }
 
+    private void mergeCertsAndContacts(AttributesMap oldMap, AttributesMap newMap) {
+        for (Map.Entry<Attribute, Value> entry : oldMap) {
+            if (Attribute.isQuery(entry.getKey())) {
+                if (oldMap.getOrNull(entry.getKey()) == null)
+                    newMap.add(entry);
+            }
+        }
+
+        ValueSet oldConts = (ValueSet) oldMap.getOrNull("contacts");
+        ValueSet newConts = (ValueSet) newMap.getOrNull("contacts");
+        Set<Value> added = new HashSet<>();
+        if (oldConts != null && newConts != null) {
+            for (Value c1 : oldConts.getValue()) {
+                ValueContact cont = (ValueContact) c1;
+                boolean found = false;
+                for (Value c2 : newConts.getValue()) {
+                    ValueContact toCheck = (ValueContact) c2;
+                    if (toCheck.getName() == cont.getName()) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    newConts.add(cont);
+                    added.add(cont);
+                }
+            }
+        }
+
+        updateContactInfo(added);
+        newMap.addOrChange("contacts", newConts);
+    }
+
     private void compareAndAdoptZMI(ZMI zone, GossipPackage gp, long SndTimestamp, long RcvTimestamp) {
         long rtd = (RcvTimestamp - SndTimestamp) + (gp.previousRcvTimestamp - gp.previousSndTimestamp);
         long dT = SndTimestamp + rtd / 2 - RcvTimestamp;
@@ -231,6 +267,8 @@ public class GossipModule extends Module {
                 System.out.println(rtd);
                 System.out.println(dT);
                 if (myTs.isLowerThan(theirTs.subtract(new ValueDuration(dT))).getValue()) {
+                    AttributesMap oldZone = zone.getAttributes();
+                    mergeCertsAndContacts(oldZone, fromGossip);
                     zone.setAttributes(fromGossip);
                     System.out.println("ZMI adopted: " + ((ValueString) fromGossip.getOrNull("name")).getValue());
                     gp.info[i] = null;

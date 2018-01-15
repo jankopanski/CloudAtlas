@@ -71,6 +71,7 @@ public class ZMICreator {
 
         root = new ZMI();
         zone = root;
+        ZMI prev;
 
         for (int i = 0; i < size; ++i) {
             zone.getAttributes().add("level", new ValueInt((long) i));
@@ -80,7 +81,9 @@ public class ZMICreator {
             zone.getAttributes().add("timestamp", new ValueTime(timestamp));
             zone.getAttributes().add("contacts", new ValueSet(TypePrimitive.CONTACT));
             zone.getAttributes().add("cardinality", new ValueInt(0L));
+            prev = zone;
             zone = new ZMI(zone);
+            prev.addSon(zone);
         }
 
         zone.getAttributes().add("level", new ValueInt((long) size));

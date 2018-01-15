@@ -5,12 +5,12 @@
 	"some_names": ["tola", "tosia"],
 	"contacts": [{
 			"path": "/uw/violet07",
-			"host": "localhost",
+			"host": "10.1.1.10",
 			"port": 1099
 		},
 		{
 			"path": "/uw/khaki13",
-			"host": "localhost",
+			"host": "10.1.1.38",
 			"port": 1100
 		}
 	]

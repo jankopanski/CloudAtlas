@@ -8,6 +8,7 @@ import java.io.Serializable;
 public class GossipPackage implements Serializable {
     public GossipType type;
     public String nodeName;
-    //public ValueTime[] freshness;
     public AttributesMap[] info;
+    public long previousSndTimestamp;
+    public long previousRcvTimestamp;
 }

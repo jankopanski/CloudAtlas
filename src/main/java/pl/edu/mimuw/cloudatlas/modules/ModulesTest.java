@@ -27,8 +27,8 @@ public class ModulesTest {
 
     public static void main(String args[]) {
         //timerSimpleTest();
-        //commSimpleTest();
-        gossipTest();
+        commSimpleTest();
+        //gossipTest();
     }
 
 
@@ -106,7 +106,7 @@ public class ModulesTest {
         CommunicationModule m1, m2;
         CommTestMdl tMdl = new CommTestMdl();
         m1 = CommunicationModule.getInstance();//new CommunicationModule();
-        m1.setNodeNameAndPorts("a", 1234, 5678);
+        m1.setNodeNameAndPorts("a", 1234, 1234);
         m1.setDstModule(tMdl);
         //m2 = new CommunicationModule();
         //m2.setNodeNameAndPorts("a", 5678, 1234);

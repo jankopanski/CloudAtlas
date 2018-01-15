@@ -136,28 +136,14 @@ public class GossipModule extends Module {
             //Use fallback
         }
         else {
-            int i = 0;
-            ZMI tmp = zone;
-            while (tmp != null) {
-                tmp = tmp.getFather();
-                i++;
-            }
-
             gossipsInProgress.put(chosenCont.getName().getSingletonName(), chosenSibling);
 
             GossipPackage gp = new GossipPackage();
 
-            gp.info = new AttributesMap[i];
-            //gp.freshness = new ValueTime[i];
+            gp.info = null;
             gp.nodeName = myPathName.getSingletonName();
             gp.type = GossipType.INITIAL;
-            i = 0;
-            zone = chosenSibling;
-            while (zone.getFather() != null) {
-                gp.info[i++] = zone.getAttributes();
-                //gp.freshness[i++] = (ValueTime) zone.getAttributes().getOrNull("timestamp");
-                zone = zone.getFather();
-            }
+
             sendGossipPackage(gp, chosenCont.getAddress());
             System.out.println("Gossip with:" + chosenCont.getName().getName());
 
@@ -165,8 +151,28 @@ public class GossipModule extends Module {
 
     }
 
+    private void fillGossipPackage(ZMI zone, GossipPackage gp) {
+        int i = 0;
+        ZMI tmp = zone;
+        while (tmp != null) {
+            tmp = tmp.getFather();
+            i++;
+        }
+
+        gp.info = new AttributesMap[i];
+        gp.nodeName = myPathName.getSingletonName();
+        gp.type = GossipType.RETURN;
+
+        i = 0;
+        while (zone.getFather() != null) {
+            gp.info[i++] = zone.getAttributes();
+            zone = zone.getFather();
+        }
+    }
+
     private void sendGossipPackage(GossipPackage gp, InetAddress addr) {
         try {
+                stream.reset();
                 ObjectOutputStream os = new ObjectOutputStream(stream);
                 os.writeObject(gp);
                 byte[] data = stream.toByteArray();
@@ -188,70 +194,21 @@ public class GossipModule extends Module {
                 q.poll();
         }
         zone = q.peek();
-        /*if (zone == AgentComputer.getInstance().getZone()) {
-            zone = zone.getFather();
-            ZMI z = null;
-            for (ZMI zmi :zone.getSons()) {
-                ValueString nameVal = (ValueString) zmi.getAttributes().getOrNull("name");
-                if (nameVal != null) {
-                    String zmiName = nameVal.getValue();
-                    if (zmiName.equals(gp.nodeName)) {
-                        z = zmi;
-                        break;
-                    }
-                }
-            }
-            if (z != null) {
-                zone = z;
-            }
-            else {
-                zone = new ZMI(zone);
-                zone.getFather().addSon(zone);
-                zone.getAttributes().add("timestamp", new ValueTime(0L));
-                zone.getAttributes().add("name", new ValueString(gp.nodeName));
-            }
-        }*/
-        //gossipsInProgress.put(gp.nodeName, zone);
+        gossipsInProgress.put(gp.nodeName, zone);
         return zone;
     }
 
-    private void handleGossipRequest(CommunicationMessage msg) {
-        ByteArrayInputStream bstream = new ByteArrayInputStream(msg.data);
-        GossipPackage gp = null;
-        try {
-            ObjectInputStream os = new ObjectInputStream(bstream);
-            gp = (GossipPackage) os.readObject();
-            os.close();
-        } catch (Exception e) {e.printStackTrace(); return;}
-
-        ZMI zone = null;
-        switch (gp.type) {
-            case INITIAL:
-                zone = findZone(gp);
-                break;
-            case RETURN:
-                zone = gossipsInProgress.get(gp.nodeName);
-                if (zone == null) {
-                    System.out.println("no zone found" + gp.nodeName);
-                    return;
-                }
-                gossipsInProgress.remove(gp.nodeName);
-                break;
-            /*case FRESHNESS:
-                zone = findZone(gp);
-
-                break;
-            case FRESHENESS_AND_ZMIS:
-                break;
-            case ZMIS:
-                break;*/
+    private ZMI findZoneInProgress(String nodeName) {
+        ZMI zone = gossipsInProgress.get(nodeName);
+        if (zone != null) {
+            gossipsInProgress.remove(nodeName);
         }
+        return zone;
+    }
 
-        if (zone == null) {
-            System.out.println("no zone found");
-            return;
-        }
-
+    private void compareAndAdoptZMI(ZMI zone, GossipPackage gp, long SndTimestamp, long RcvTimestamp) {
+        long rtd = (RcvTimestamp - SndTimestamp) + (gp.previousRcvTimestamp - gp.previousSndTimestamp);
+        long dT = SndTimestamp + rtd / 2 - RcvTimestamp;
         for (int i = 0; i < gp.info.length; ++i) {
             AttributesMap fromGossip = gp.info[i];
             if (fromGossip == null)
@@ -265,32 +222,67 @@ public class GossipModule extends Module {
                 continue;
             }
 
-                String s1 = ((ValueString) fromGossip.getOrNull("name")).getValue();
-                String s2 = ((ValueString) zone.getAttributes().getOrNull("name")).getValue();
-                System.out.println("my " + s2 + " vs " + s1);
-                System.out.println(myTs);
-                System.out.println(theirTs);
-            if (myTs.isLowerThan(theirTs).getValue()) {
+            String s1 = ((ValueString) fromGossip.getOrNull("name")).getValue();
+            String s2 = ((ValueString) zone.getAttributes().getOrNull("name")).getValue();
+            System.out.println("my " + s2 + " vs " + s1);
+            System.out.println(myTs);
+            System.out.println(theirTs);
+            if (myTs.isLowerThan(theirTs.subtract(new ValueDuration(dT))).getValue()) {
                 zone.setAttributes(fromGossip);
                 System.out.println("ZMI adopted: " + ((ValueString) fromGossip.getOrNull("name")).getValue());
                 gp.info[i] = null;
-            }
-            else {
+            } else {
                 gp.info[i] = zone.getAttributes();
 
             }
-
-            if (gp.type == GossipType.INITIAL) {
-                gp.type = GossipType.RETURN;
-                gp.nodeName = myPathName.getSingletonName();
-                sendGossipPackage(gp, msg.IP);
-            }
             zone = zone.getFather();
         }
-        System.out.println("Gossip successful");
     }
 
+    private void fillTimeStamps(GossipPackage gp, CommunicationMessage msg) {
+        gp.previousSndTimestamp = msg.sndTimestamp;
+        gp.previousRcvTimestamp = msg.rcvTimestamp;
+    }
 
+    private void handleGossipRequest(CommunicationMessage msg) {
+        ByteArrayInputStream bstream = new ByteArrayInputStream(msg.data);
+        GossipPackage gp;
+        try {
+            ObjectInputStream os = new ObjectInputStream(bstream);
+            gp = (GossipPackage) os.readObject();
+            os.close();
+        } catch (Exception e) {e.printStackTrace(); return;}
+
+        ZMI zone;
+        switch (gp.type) {
+            case INITIAL:
+                zone = findZone(gp);
+                if (zone == null)
+                    break;
+                fillGossipPackage(zone, gp);
+                fillTimeStamps(gp, msg);
+                sendGossipPackage(gp, msg.IP);
+                return;
+            case RETURN:
+                zone = findZoneInProgress(gp.nodeName);
+                if (zone == null)
+                    break;
+                compareAndAdoptZMI(zone, gp, msg.sndTimestamp, msg.rcvTimestamp);
+                gp.type = GossipType.FINAL;
+                gp.nodeName = myPathName.getSingletonName();
+                fillTimeStamps(gp, msg);
+                sendGossipPackage(gp, msg.IP);
+                return;
+            case FINAL:
+                zone = findZoneInProgress(gp.nodeName);
+                if (zone == null)
+                    break;
+                compareAndAdoptZMI(zone, gp, msg.sndTimestamp, msg.rcvTimestamp);
+                return;
+        }
+
+        System.out.println("no zone found " + gp.nodeName);
+    }
 
     private boolean handleTimerResponse(TimerResponse msg) {
         if (msg.equals(recomputeMessge)) {

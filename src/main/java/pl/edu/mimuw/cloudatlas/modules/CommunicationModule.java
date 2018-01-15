@@ -61,8 +61,11 @@ public class CommunicationModule extends Module {
 
     void completeMessage(udpWaitingRoom room, InetAddress addr) {
         int i = 0;
+        long avgSend = 0, avgRcv = 0;
         for (udpMessage msg : room.msges) {
             i += msg.data.length;
+            avgSend += msg.timestamps[0];
+            avgRcv += msg.timestamps[1];
         }
         byte[] data = new byte[i];
 
@@ -71,7 +74,13 @@ public class CommunicationModule extends Module {
             System.arraycopy(msg.data, 0, data, i, msg.data.length);
             i += msg.data.length;
         }
+        avgSend /= room.msgCount;
+        avgRcv /= room.msgCount;
         CommunicationMessage completeMessage = new CommunicationMessage(this, addr, data);
+        i = 0;
+
+        completeMessage.sndTimestamp = avgSend;
+        completeMessage.rcvTimestamp = avgRcv;
         dstModule.sendMessage(completeMessage);
     }
 
@@ -85,7 +94,8 @@ public class CommunicationModule extends Module {
                     ByteArrayInputStream bstream = new ByteArrayInputStream(rcvPckt.getData());
                     ObjectInputStream os;
                     os = new ObjectInputStream(bstream);
-                    final udpMessage msg = (udpMessage) os.readObject();
+                    udpMessage msg = (udpMessage) os.readObject();
+                    msg.timestamps[1] = System.currentTimeMillis();
                     os.close();
 
                     fragments.compute(msg.nodeName, (name, currVal) -> {
@@ -127,14 +137,15 @@ public class CommunicationModule extends Module {
         uMsg.number = msgCounter++;
         uMsg.parts = msg.data.length / udpMaxLen + 1;
         uMsg.counter = 0;
+        uMsg.timestamps = new long[2];
 
         for (int i = 0; i < msg.data.length; i += udpMaxLen) {
-            //uMsg.data = msg.data  .substring(i, (i + udpMaxLen <= msg.data.length() ? i + udpMaxLen : msg.data.length()));
             int len = msg.data.length - i < udpMaxLen ? msg.data.length - i : udpMaxLen;
             uMsg.data = new byte[len];
             System.arraycopy(msg.data, i, uMsg.data, 0, len);
             try {
                 ObjectOutputStream os = new ObjectOutputStream(stream);
+                uMsg.timestamps[0] = System.currentTimeMillis();
                 os.writeObject(uMsg);
                 byte[] sndArr = stream.toByteArray();
                 DatagramPacket sndPkt = new DatagramPacket(sndArr, sndArr.length, msg.IP, sPort);

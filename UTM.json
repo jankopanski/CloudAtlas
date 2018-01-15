@@ -1,7 +1,7 @@
 {
-	"path": "/uw/TM",
+	"path": "/uw/UTM",
 	"gossip": {
-		"port": 1296,
+		"port": 1294,
 		"gossip_timeout": 10,
 		"update_timeout": 10,
 		"strategy": "random",

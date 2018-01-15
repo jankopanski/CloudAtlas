@@ -3,7 +3,7 @@ var refreshTime = 2000;
 var nextReadId = 0;
 var timeoutVar = null;
 
-function connectTo(ipOrHost, port) {
+function connectTo(port, ipOrHost) {
     var req = new XMLHttpRequest();
     req.onreadystatechange = function () {
         if (this.readyState == 4) {

@@ -139,8 +139,13 @@ public class GossipModule extends Module {
             gossipsInProgress.put(chosenCont.getName().getSingletonName(), chosenSibling);
 
             GossipPackage gp = new GossipPackage();
-
+            int i = 0;
+            while(chosenSibling != null) {
+                chosenSibling = chosenSibling.getFather();
+                ++i;
+            }
             gp.info = null;
+            gp.zonesCnt = i;
             gp.nodeName = myPathName.getSingletonName();
             gp.type = GossipType.INITIAL;
 
@@ -152,18 +157,12 @@ public class GossipModule extends Module {
     }
 
     private void fillGossipPackage(ZMI zone, GossipPackage gp) {
-        int i = 0;
-        ZMI tmp = zone;
-        while (tmp != null) {
-            tmp = tmp.getFather();
-            i++;
-        }
 
-        gp.info = new AttributesMap[i];
+        gp.info = new AttributesMap[gp.zonesCnt];
         gp.nodeName = myPathName.getSingletonName();
         gp.type = GossipType.RETURN;
 
-        i = 0;
+        int i = 0;
         while (zone.getFather() != null) {
             gp.info[i++] = zone.getAttributes();
             zone = zone.getFather();

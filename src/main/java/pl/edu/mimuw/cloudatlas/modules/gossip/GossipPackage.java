@@ -9,6 +9,7 @@ public class GossipPackage implements Serializable {
     public GossipType type;
     public String nodeName;
     public AttributesMap[] info;
+    public int zonesCnt;
     public long previousSndTimestamp;
     public long previousRcvTimestamp;
 }

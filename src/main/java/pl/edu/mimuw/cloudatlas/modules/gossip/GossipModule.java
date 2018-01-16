@@ -84,7 +84,7 @@ public class GossipModule extends Module {
 
         for (Value v: contacts) {
             ValueContact contact = (ValueContact) v;
-            if (!myPathName.equals(((ValueContact) v).getName())) {
+            if (!myPathName.getName().equals(((ValueContact) v).getName().getName())) {
                 Iterator<String> myCompo, contCompo;
                 myCompo = myPathName.getComponents().iterator();
                 contCompo = contact.getName().getComponents().iterator();
@@ -252,7 +252,7 @@ public class GossipModule extends Module {
                 boolean found = false;
                 for (Value c2 : newConts.getValue()) {
                     ValueContact toCheck = (ValueContact) c2;
-                    if (toCheck.getName() == cont.getName()) {
+                    if (toCheck.getName().getName().equals(cont.getName().getName())) {
                         found = true;
                         break;
                     }
@@ -263,8 +263,8 @@ public class GossipModule extends Module {
                 }
             }
         }
-
-        updateContactInfo(added);
+        if (!added.isEmpty())
+            updateContactInfo(added);
         newMap.addOrChange("contacts", newConts);
     }
 

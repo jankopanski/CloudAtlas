@@ -105,8 +105,7 @@ public class Client extends Module {
                        result.setStatus(Status.NOT_FOUND);
                     }
                     else {
-                        if (ret.getType() == TypePrimitive.TIME || ret.getType() == TypePrimitive.BOOLEAN)
-                            ret = ret.convertTo(TypePrimitive.STRING);
+                        ret = ret.convertTo(TypePrimitive.STRING);
                         result.setStatus(Status.OK);
                         result.setResponse(g.toJson(ret));
                     }

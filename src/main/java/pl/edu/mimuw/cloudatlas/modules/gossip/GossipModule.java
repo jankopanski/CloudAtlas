@@ -79,9 +79,9 @@ public class GossipModule extends Module {
     }
 
     private void updateContactInfo(Set<Value> contacts) {
-        ZMI zone = AgentComputer.getInstance().getZone();
 
         for (Value v: contacts) {
+            ZMI zone = AgentComputer.getInstance().getZone();
             ValueContact contact = (ValueContact) v;
             if (!myPathName.getName().equals(((ValueContact) v).getName().getName())) {
                 Iterator<String> myCompo, contCompo;

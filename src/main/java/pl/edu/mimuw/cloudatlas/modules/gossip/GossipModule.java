@@ -1,6 +1,5 @@
 package pl.edu.mimuw.cloudatlas.modules.gossip;
 
-import org.eclipse.jetty.util.ArrayQueue;
 import pl.edu.mimuw.cloudatlas.agent.AgentComputer;
 import pl.edu.mimuw.cloudatlas.model.*;
 import pl.edu.mimuw.cloudatlas.modules.*;
@@ -214,7 +213,7 @@ public class GossipModule extends Module {
     private ZMI findZone(GossipPackage gp) {
         System.out.println("have to find zone " + gp.zonesCnt);
         ZMI zone = AgentComputer.getInstance().getZone();
-        Queue<ZMI> q = new ArrayQueue<>();
+        Queue<ZMI> q = new ArrayDeque<>();
         while (zone != null) {
             q.add(zone);
             zone = zone.getFather();
